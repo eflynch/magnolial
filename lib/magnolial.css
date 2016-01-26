@@ -1,0 +1,47 @@
+.MAGNOLIAL {
+    font-family: sans-serif;
+    background-color: #FDF5DB;
+    color: #1C8173;
+}
+
+.MAGNOLIAL h1 {
+    font-weight: 500;
+    font-size: 16;
+    margin: 0;
+}
+
+.MAGNOLIAL_decoration {
+    display: inline-block;
+    width: 18px;
+    cursor: pointer;
+    -moz-user-select: none; 
+    -khtml-user-select: none; 
+    -webkit-user-select: none; 
+    -o-user-select: none; 
+}
+
+.MAGNOLIAL p {
+    color: #8C8C8C;
+    font-size: 12;
+    margin: 0;
+    padding: 0;
+    padding-left: 18px;
+}
+
+.MAGNOLIAL ul {
+    margin: 0;
+    margin-left: 5px;
+    padding-left: 30px;
+    border-left-width: 1px;
+    border-left-style: solid;
+    border-left-color: #DCDCDC;
+}
+
+.MAGNOLIAL li {
+    list-style: none;
+    padding-top: 5px;
+}
+
+.MAGNOLIAL_hidden {
+    display: none;
+}

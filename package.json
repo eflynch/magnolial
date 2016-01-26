@@ -2,7 +2,7 @@
   "name": "magnolial",
   "version": "0.0.1",
   "description": "Workflowy-inspired self-hosted nested list webapp",
-  "main": "dist/magnolia.js",
+  "main": "dist/magnolial.js",
   "scripts": {
     "prepublish": "jsx ./src ./dist"
   },
