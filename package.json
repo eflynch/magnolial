@@ -2,9 +2,9 @@
   "name": "magnolial",
   "version": "0.0.1",
   "description": "Workflowy-inspired self-hosted nested list webapp",
-  "main": "magnolia.js",
+  "main": "dist/magnolia.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepublish": "jsx ./src ./dist"
   },
   "repository": {
     "type": "git",
@@ -13,12 +13,29 @@
   "keywords": [
     "magnolial",
     "workflowy",
-    "lists"
+    "lists",
+    "trees"
   ],
-  "author": "Evan F. Lynch",
+  "author": "Evan F. Lynch <evan.f.lynch@gmail.com>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/eflynch/magnolial/issues"
   },
-  "homepage": "https://github.com/eflynch/magnolial"
+  "homepage": "https://github.com/eflynch/magnolial",
+  "dependencies": {
+    "react": "^0.14.6"
+  },
+  "devDependencies": {
+    "babel-preset-react": "^6.3.13",
+    "babelify": "^7.2.0",
+    "browserify": "^13.0.0",
+    "glob": "^6.0.4",
+    "gulp": "^3.9.0",
+    "gulp-notify": "^2.2.0",
+    "gulp-util": "^3.0.7",
+    "react-dom": "^0.14.6",
+    "strictify": "^0.2.0",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.7.0"
+  }
 }
