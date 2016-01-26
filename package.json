@@ -1,0 +1,24 @@
+{
+  "name": "magnolial",
+  "version": "0.0.1",
+  "description": "Workflowy-inspired self-hosted nested list webapp",
+  "main": "magnolia.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eflynch/magnolial.git"
+  },
+  "keywords": [
+    "magnolial",
+    "workflowy",
+    "lists"
+  ],
+  "author": "Evan F. Lynch",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eflynch/magnolial/issues"
+  },
+  "homepage": "https://github.com/eflynch/magnolial"
+}
