@@ -15,6 +15,9 @@ var Title = React.createClass({
             this.props.setFocus(null);
         }
     },
+    onFocus: function(e){
+        ReactDOM.findDOMNode(this.refs.input).setSelectionRange(this.props.title.length, this.props.title.length);
+    },
     setTitle: function (e){
         this.props.setTitle(this.props.serial, e.currentTarget.value);
     },
@@ -22,6 +25,7 @@ var Title = React.createClass({
         return <input ref='input'
                       value={this.props.title}
                       onBlur={this.onBlur}
+                      onFocus={this.onFocus}
                       onChange={this.setTitle}/>;
     }
 });
@@ -47,6 +51,10 @@ var Item = React.createClass({
                          outdentItem={this.props.outdentItem}
                          moveItemDown={this.props.moveItemDown}
                          moveItemUp={this.props.moveItemUp}
+                         setHead={this.props.setHead}
+                         setHeadBack={this.props.setHeadBack}
+                         setFocusDown={this.props.setFocusDown}
+                         setFocusUp={this.props.setFocusUp}
                          setFocus={this.props.setFocus}
                          setTitle={this.props.setTitle}/>;
         }.bind(this));
@@ -72,6 +80,12 @@ var Item = React.createClass({
         this.props.setFocus(this.props.serial);
     },
     handleKeyDown: function (e){
+        if (e.keyCode === 32){ // Spacebar
+            if (e.shiftKey){
+                e.preventDefault();
+                this.toggleCollapsed();
+            }
+        }
         if (e.key === 'Tab'){
             e.preventDefault();
             if (e.shiftKey){
@@ -80,24 +94,46 @@ var Item = React.createClass({
                 this.props.indentItem(this.props.serial);
             }
         }
+        if (e.key === 'ArrowRight'){
+            if (e.shiftKey){
+                e.preventDefault();
+                this.props.indentItem(this.props.serial); 
+            }
+        }
+        if (e.key === 'ArrowLeft'){
+            if (e.shiftKey){
+                e.preventDefault();
+                this.props.outdentItem(this.props.serial); 
+            }
+        }
         if (e.key === 'ArrowUp'){
             e.preventDefault();
             if (e.shiftKey){
-                this.props.moveItemUp(this.props.serial);
+                if (!this.props.moveItemUp(this.props.serial)){
+                    this.props.outdentItem(this.props.serial);
+                    this.props.moveItemUp(this.props.serial);
+                }
             } else {
+                this.props.setFocusUp(this.props.serial);
             }
         }
         if (e.key === 'ArrowDown'){
             e.preventDefault();
             if (e.shiftKey){
-                this.props.moveItemDown(this.props.serial);
+                if (!this.props.moveItemDown(this.props.serial)){
+                    this.props.indentItem(this.props.serial);
+                }
             } else {
+                this.props.setFocusDown(this.props.serial);
             }
         }
         if (e.key === 'Enter'){
             e.preventDefault();
             if (e.shiftKey){
-                this.toggleCollapsed();
+                if (this.props.children.length > 0){
+                    this.props.setHead(this.props.serial);
+                    this.props.setFocus(this.props.children[0].serial);
+                }
             } else {
                 if (this.props.title === ''){
                     if (!this.props.outdentItem(this.props.serial)){
@@ -108,12 +144,21 @@ var Item = React.createClass({
                 }
             }
         }
+        if (e.key === 'Escape'){
+            e.preventDefault();
+            this.props.setHeadBack(this.props.serial);
+        }
         if (e.key === 'Backspace'){
-            if (this.props.title === '' && this.props.children.length === 0){
-
+            if (e.shiftKey){
                 e.preventDefault();
                 this.props.deleteItem(this.props.serial);
+            } else {
+                if (this.props.title === '' && this.props.children.length === 0){
+                    e.preventDefault();
+                    this.props.deleteItem(this.props.serial);
+                }
             }
+            
         }
     },
     render: function(){

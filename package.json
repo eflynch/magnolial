@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/eflynch/magnolial",
   "dependencies": {
+    "react-dom": "^0.14.6",
     "react": "^0.14.6"
   },
   "devDependencies": {
@@ -33,7 +34,6 @@
     "gulp": "^3.9.0",
     "gulp-notify": "^2.2.0",
     "gulp-util": "^3.0.7",
-    "react-dom": "^0.14.6",
     "strictify": "^0.2.0",
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.7.0"
