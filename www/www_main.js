@@ -19028,6 +19028,34 @@ module.exports = require('./lib/React');
 "use strict";
 
 var React = require('react');
+var ReactDOM = require('react-dom');
+
+var Title = React.createClass({
+    displayName: 'Title',
+
+    componentDidMount() {
+        this.componentDidUpdate();
+    },
+    componentDidUpdate(prevProps, prevState) {
+        if (this.props.allFocus && this.props.serial === this.props.focus) {
+            ReactDOM.findDOMNode(this.refs.input).focus();
+        }
+    },
+    onBlur: function (e) {
+        if (this.props.allFocus && e.relatedTarget === null) {
+            this.props.setFocus(null);
+        }
+    },
+    setTitle: function (e) {
+        this.props.setTitle(this.props.serial, e.currentTarget.value);
+    },
+    render: function () {
+        return React.createElement('input', { ref: 'input',
+            value: this.props.title,
+            onBlur: this.onBlur,
+            onChange: this.setTitle });
+    }
+});
 
 var Item = React.createClass({
     displayName: 'Item',
@@ -19043,7 +19071,17 @@ var Item = React.createClass({
                 serial: child.serial,
                 key: child.serial,
                 collapsed: child.collapsed,
-                collapse: this.props.collapse });
+                focus: this.props.focus,
+                allFocus: this.props.allFocus,
+                collapse: this.props.collapse,
+                newItemBelow: this.props.newItemBelow,
+                deleteItem: this.props.deleteItem,
+                indentItem: this.props.indentItem,
+                outdentItem: this.props.outdentItem,
+                moveItemDown: this.props.moveItemDown,
+                moveItemUp: this.props.moveItemUp,
+                setFocus: this.props.setFocus,
+                setTitle: this.props.setTitle });
         }.bind(this));
     },
     toggleCollapsed: function () {
@@ -19067,15 +19105,66 @@ var Item = React.createClass({
             symbol
         );
     },
+    onFocus: function () {
+        this.props.setFocus(this.props.serial);
+    },
+    handleKeyDown: function (e) {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            if (e.shiftKey) {
+                this.props.outdentItem(this.props.serial);
+            } else {
+                this.props.indentItem(this.props.serial);
+            }
+        }
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (e.shiftKey) {
+                this.props.moveItemUp(this.props.serial);
+            } else {}
+        }
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (e.shiftKey) {
+                this.props.moveItemDown(this.props.serial);
+            } else {}
+        }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (e.shiftKey) {
+                this.toggleCollapsed();
+            } else {
+                if (this.props.title === '') {
+                    if (!this.props.outdentItem(this.props.serial)) {
+                        this.props.newItemBelow(this.props.serial);
+                    }
+                } else {
+                    this.props.newItemBelow(this.props.serial);
+                }
+            }
+        }
+        if (e.key === 'Backspace') {
+            if (this.props.title === '' && this.props.children.length === 0) {
+
+                e.preventDefault();
+                this.props.deleteItem(this.props.serial);
+            }
+        }
+    },
     render: function () {
         return React.createElement(
             'li',
             null,
             React.createElement(
                 'h1',
-                null,
+                { onFocus: this.onFocus, onKeyDown: this.handleKeyDown },
                 this.renderDecoration(),
-                this.props.title
+                React.createElement(Title, { title: this.props.title,
+                    serial: this.props.serial,
+                    setTitle: this.props.setTitle,
+                    setFocus: this.props.setFocus,
+                    focus: this.props.focus,
+                    allFocus: this.props.allFocus })
             ),
             React.createElement(
                 'p',
@@ -19093,7 +19182,7 @@ var Item = React.createClass({
 
 module.exports = Item;
 
-},{"react":158}],160:[function(require,module,exports){
+},{"react":158,"react-dom":2}],160:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -19106,7 +19195,9 @@ var Magnolial = React.createClass({
     getInitialState() {
         return {
             roots: [],
-            nextSerial: 0
+            nextSerial: 0,
+            focus: null,
+            allFocus: false
         };
     },
     componentWillMount() {
@@ -19123,7 +19214,7 @@ var Magnolial = React.createClass({
         // add serials and missing fields
         var serial = 0;
         var node_hash = {};
-        var process = function (child) {
+        var process = function (child, parentSerial) {
             if (child.title === undefined) {
                 child.title = "";
             }
@@ -19136,11 +19227,13 @@ var Magnolial = React.createClass({
             if (child.collapsed === undefined) {
                 child.collapsed = false;
             }
+
+            child.parentSerial = parentSerial;
             child.serial = serial;
             node_hash[serial] = child;
             serial += 1;
             for (var i = 0; i < child.children.length; i++) {
-                process(child.children[i]);
+                process(child.children[i], child.serial);
             }
         };
         for (var i = 0; i < roots.length; i++) {
@@ -19159,6 +19252,149 @@ var Magnolial = React.createClass({
             roots: this.state.roots
         });
     },
+    setTitle: function (serial, title) {
+        this.state.node_hash[serial].title = title;
+        this.setState({
+            roots: this.state.roots
+        });
+    },
+    newItemBelow: function (serial) {
+        var child = this.state.node_hash[serial];
+        if (child.parentSerial === undefined) {
+            var siblings = this.state.roots;
+        } else {
+            var siblings = this.state.node_hash[child.parentSerial].children;
+        }
+        var childIdx = siblings.indexOf(child);
+        var newItem = {
+            title: '',
+            collapsed: false,
+            note: '',
+            serial: this.state.nextSerial,
+            parentSerial: child.parentSerial,
+            children: []
+        };
+        siblings.splice(childIdx + 1, 0, newItem);
+        this.state.node_hash[this.state.nextSerial] = newItem;
+        this.setState({
+            roots: this.state.roots,
+            node_hash: this.state.node_hash,
+            focus: this.state.nextSerial,
+            nextSerial: this.state.nextSerial + 1
+        });
+    },
+    deleteItem: function (serial) {
+        var child = this.state.node_hash[serial];
+        if (child.parentSerial === undefined) {
+            var siblings = this.state.roots;
+        } else {
+            var siblings = this.state.node_hash[child.parentSerial].children;
+        }
+        var childIdx = siblings.indexOf(child);
+        if (child.parentSerial === undefined && childIdx === 0) {
+            return false;
+        }
+        siblings.splice(childIdx, 1);
+        delete this.state.node_hash[serial];
+
+        this.setState({
+            roots: this.state.roots,
+            node_hash: this.state.node_hash
+        });
+
+        if (childIdx <= 0) {
+            this.setFocus(child.parentSerial);
+        } else {
+            var upperSib = siblings[childIdx - 1];
+            this.setFocus(upperSib.serial);
+        }
+        return true;
+    },
+    indentItem: function (serial) {
+        // move to end of children of upper sibling
+        var child = this.state.node_hash[serial];
+        if (child.parentSerial === undefined) {
+            var siblings = this.state.roots;
+        } else {
+            var siblings = this.state.node_hash[child.parentSerial].children;
+        }
+        var childIdx = siblings.indexOf(child);
+        if (childIdx <= 0) {
+            return false;
+        }
+        var upperSib = siblings[childIdx - 1];
+        upperSib.children.push(child);
+        upperSib.collapsed = false;
+        child.parentSerial = upperSib.serial;
+        siblings.splice(childIdx, 1);
+        this.setState({ roots: this.state.roots });
+        return true;
+    },
+    outdentItem: function (serial) {
+        // move to below parent
+        var child = this.state.node_hash[serial];
+        if (child.parentSerial === undefined) {
+            return false;
+        }
+        var parent = this.state.node_hash[child.parentSerial];
+        if (parent.parentSerial === undefined) {
+            var parentSiblings = this.state.roots;
+        } else {
+            var parentSiblings = this.state.node_hash[parent.parentSerial].children;
+        }
+        var parentIdx = parentSiblings.indexOf(parent);
+        parentSiblings.splice(parentIdx + 1, 0, child);
+        child.parentSerial = parent.parentSerial;
+        parent.children.splice(parent.children.indexOf(child), 1);
+        this.setState({ roots: this.state.roots });
+        return true;
+    },
+    moveItemUp: function (serial) {
+        // move to above upper sibling
+        var child = this.state.node_hash[serial];
+        if (child.parentSerial === undefined) {
+            var siblings = this.state.roots;
+        } else {
+            var siblings = this.state.node_hash[child.parentSerial].children;
+        }
+        var childIdx = siblings.indexOf(child);
+        if (childIdx <= 0) {
+            return false;
+        }
+        siblings.splice(childIdx, 1);
+        siblings.splice(childIdx - 1, 0, child);
+        this.setState({ roots: this.state.roots });
+        return true;
+    },
+    moveItemDown: function (serial) {
+        // move to below lower sibling
+        var child = this.state.node_hash[serial];
+        if (child.parentSerial === undefined) {
+            var siblings = this.state.roots;
+        } else {
+            var siblings = this.state.node_hash[child.parentSerial].children;
+        }
+        var childIdx = siblings.indexOf(child);
+        if (childIdx == siblings.length - 1) {
+            return false;
+        }
+        siblings.splice(childIdx, 1);
+        siblings.splice(childIdx + 1, 0, child);
+        this.setState({ roots: this.state.roots });
+        return true;
+    },
+    setFocus: function (serial) {
+        if (serial !== null) {
+            this.state.node_hash[serial].collapsed = false;
+        }
+        this.setState({
+            roots: this.state.roots,
+            focus: serial
+        });
+    },
+    onFocus: function (e) {
+        this.setState({ allFocus: true });
+    },
     renderRoots: function () {
         if (this.state.roots === undefined) {
             return [];
@@ -19170,13 +19406,23 @@ var Magnolial = React.createClass({
                 serial: root.serial,
                 key: root.serial,
                 collapsed: root.collapsed,
-                collapse: this.collapse });
+                focus: this.state.focus,
+                allFocus: this.state.allFocus,
+                collapse: this.collapse,
+                newItemBelow: this.newItemBelow,
+                deleteItem: this.deleteItem,
+                indentItem: this.indentItem,
+                outdentItem: this.outdentItem,
+                moveItemDown: this.moveItemDown,
+                moveItemUp: this.moveItemUp,
+                setFocus: this.setFocus,
+                setTitle: this.setTitle });
         }.bind(this));
     },
     render: function () {
         return React.createElement(
             'div',
-            { className: 'MAGNOLIAL' },
+            { className: 'MAGNOLIAL', onBlur: this.onBlur, onFocus: this.onFocus },
             this.renderRoots()
         );
     }
@@ -19192,15 +19438,7 @@ var ReactDOM = require('react-dom');
 
 var Magnolial = require('./magnolial');
 
-var TestList = [{
-    title: 'Root Node',
-    note: 'This is the root node dude',
-    children: [{ title: 'Sub node 1', collapsed: false }, { title: 'Sub node 2', note: 'This is another note', children: [] }, { title: 'Sub node 3', children: [{ title: 'Subsubnode 1' }, { title: 'Subsubnode 2' }], collapsed: true }]
-}, {
-    title: 'Root Node 2',
-    note: 'This is the root node dude',
-    children: [{ title: 'Sub node 1', collapsed: false }, { title: 'Sub node 2', note: 'This is another note', children: [] }, { title: 'Sub node 3', children: [{ title: 'Subsubnode 1' }, { title: 'Subsubnode 2' }], collapsed: true }]
-}];
+var TestList = [{}];
 
 document.addEventListener("DOMContentLoaded", function () {
     var content = document.getElementById("content");
