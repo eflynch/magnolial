@@ -19302,7 +19302,7 @@ var Magnolial = React.createClass({
         // add serials and missing fields
         var serial = 0;
         var node_hash = {};
-        var process = function (child, parentSerial) {
+        var formatChild = function (child, parentSerial) {
             if (child.title === undefined) {
                 child.title = "";
             }
@@ -19321,10 +19321,10 @@ var Magnolial = React.createClass({
             node_hash[serial] = child;
             serial += 1;
             for (var i = 0; i < child.children.length; i++) {
-                process(child.children[i], child.serial);
+                formatChild(child.children[i], child.serial);
             }
         };
-        process(root);
+        formatChild(root);
 
         this.setState({
             root: root,
@@ -19684,7 +19684,7 @@ var Magnolial = require('./magnolial');
 
 document.addEventListener("DOMContentLoaded", function () {
     var content = document.getElementById("content");
-    ReactDOM.render(React.createElement(Magnolial, { initRoot: { children: [{ title: 'projects', children: [{ title: 'thesis', children: [{ title: 'outline', children: [{}, {}, {}] }, {}, {}, {}] }] }] } }), content);
+    ReactDOM.render(React.createElement(Magnolial, { initRoot: { children: [{}] } }), content);
 });
 
 },{"./magnolial":160,"react":158,"react-dom":2}]},{},[161]);
