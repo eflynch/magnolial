@@ -1,7 +1,7 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 
-var Title = React.createClass({
+var Title = React.createClass({displayName: "Title",
     componentDidMount() {
         this.componentDidUpdate();
     },
@@ -22,15 +22,15 @@ var Title = React.createClass({
         this.props.setTitle(this.props.serial, e.currentTarget.value);
     },
     render: function (){
-        return <input ref='input'
-                      value={this.props.title}
-                      onBlur={this.onBlur}
-                      onFocus={this.onFocus}
-                      onChange={this.setTitle}/>;
+        return React.createElement("input", {ref: "input", 
+                      value: this.props.title, 
+                      onBlur: this.onBlur, 
+                      onFocus: this.onFocus, 
+                      onChange: this.setTitle});
     }
 });
 
-var Item = React.createClass({
+var Item = React.createClass({displayName: "Item",
     genChildren: function(){
         if (this.props.childs === undefined){
             return [];
@@ -39,27 +39,27 @@ var Item = React.createClass({
             return [];
         }
         return this.props.childs.map(function(child, i){
-            return <Item title={child.title}
-                         note={child.note}
-                         childs={child.childs}
-                         serial={child.serial}
-                         key={child.serial}
-                         collapsed={child.collapsed}
-                         focus={this.props.focus}
-                         allFocus={this.props.allFocus}
-                         collapse={this.props.collapse}
-                         newItemBelow={this.props.newItemBelow}
-                         deleteItem={this.props.deleteItem}
-                         indentItem={this.props.indentItem}
-                         outdentItem={this.props.outdentItem}
-                         moveItemDown={this.props.moveItemDown}
-                         moveItemUp={this.props.moveItemUp}
-                         setHead={this.props.setHead}
-                         setHeadBack={this.props.setHeadBack}
-                         setFocusDown={this.props.setFocusDown}
-                         setFocusUp={this.props.setFocusUp}
-                         setFocus={this.props.setFocus}
-                         setTitle={this.props.setTitle}/>;
+            return React.createElement(Item, {title: child.title, 
+                         note: child.note, 
+                         childs: child.childs, 
+                         serial: child.serial, 
+                         key: child.serial, 
+                         collapsed: child.collapsed, 
+                         focus: this.props.focus, 
+                         allFocus: this.props.allFocus, 
+                         collapse: this.props.collapse, 
+                         newItemBelow: this.props.newItemBelow, 
+                         deleteItem: this.props.deleteItem, 
+                         indentItem: this.props.indentItem, 
+                         outdentItem: this.props.outdentItem, 
+                         moveItemDown: this.props.moveItemDown, 
+                         moveItemUp: this.props.moveItemUp, 
+                         setHead: this.props.setHead, 
+                         setHeadBack: this.props.setHeadBack, 
+                         setFocusDown: this.props.setFocusDown, 
+                         setFocusUp: this.props.setFocusUp, 
+                         setFocus: this.props.setFocus, 
+                         setTitle: this.props.setTitle});
         }.bind(this));
     },
     toggleCollapsed: function (){
@@ -76,8 +76,8 @@ var Item = React.createClass({
         } else {
             symbol = '❀'
         }
-        return <span className='MAGNOLIAL_decoration'
-                     onClick={this.toggleCollapsed}>{symbol}</span>;
+        return React.createElement("span", {className: "MAGNOLIAL_decoration", 
+                     onClick: this.toggleCollapsed}, symbol);
     },
     onFocus: function (){
         this.props.setFocus(this.props.serial);
@@ -166,21 +166,21 @@ var Item = React.createClass({
     },
     render: function(){
         return (
-            <li>
-                <h1 onFocus={this.onFocus} onKeyDown={this.handleKeyDown}>
-                    {this.renderDecoration()}
-                    <Title title={this.props.title}
-                           serial={this.props.serial}
-                           setTitle={this.props.setTitle}
-                           setFocus={this.props.setFocus}
-                           focus={this.props.focus}
-                           allFocus={this.props.allFocus}/>
-                </h1>
-                <p>{this.props.note}</p>
-                <ul>
-                    {this.genChildren()}
-                </ul>
-            </li>
+            React.createElement("li", null, 
+                React.createElement("h1", {onFocus: this.onFocus, onKeyDown: this.handleKeyDown}, 
+                    this.renderDecoration(), 
+                    React.createElement(Title, {title: this.props.title, 
+                           serial: this.props.serial, 
+                           setTitle: this.props.setTitle, 
+                           setFocus: this.props.setFocus, 
+                           focus: this.props.focus, 
+                           allFocus: this.props.allFocus})
+                ), 
+                React.createElement("p", null, this.props.note), 
+                React.createElement("ul", null, 
+                    this.genChildren()
+                )
+            )
         );
     }
 });

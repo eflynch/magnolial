@@ -29,7 +29,7 @@ var makeSerial = function(size) {
     return text.join();
 };
 
-var Magnolial = React.createClass({
+var Magnolial = React.createClass({displayName: "Magnolial",
     getInitialState() {
         return {
             root: {},
@@ -335,27 +335,27 @@ var Magnolial = React.createClass({
     renderroot: function (){
         var head = this.state.node_hash[this.state.headSerial];
         var items = head.childs.map(function(root, i){
-            return <Item title={root.title}
-                         note={root.note}
-                         childs={root.childs}
-                         serial={root.serial}
-                         key={root.serial}
-                         collapsed={root.collapsed}
-                         focus={this.state.focus}
-                         allFocus={this.state.allFocus}
-                         collapse={this.collapse}
-                         newItemBelow={this.newItemBelow}
-                         deleteItem={this.deleteItem}
-                         indentItem={this.indentItem}
-                         outdentItem={this.outdentItem}
-                         moveItemDown={this.moveItemDown}
-                         moveItemUp={this.moveItemUp}
-                         setHead={this.setHead}
-                         setHeadBack={this.setHeadBack}
-                         setFocus={this.setFocus}
-                         setFocusDown={this.setFocusDown}
-                         setFocusUp={this.setFocusUp}
-                         setTitle={this.setTitle}/>;
+            return React.createElement(Item, {title: root.title, 
+                         note: root.note, 
+                         childs: root.childs, 
+                         serial: root.serial, 
+                         key: root.serial, 
+                         collapsed: root.collapsed, 
+                         focus: this.state.focus, 
+                         allFocus: this.state.allFocus, 
+                         collapse: this.collapse, 
+                         newItemBelow: this.newItemBelow, 
+                         deleteItem: this.deleteItem, 
+                         indentItem: this.indentItem, 
+                         outdentItem: this.outdentItem, 
+                         moveItemDown: this.moveItemDown, 
+                         moveItemUp: this.moveItemUp, 
+                         setHead: this.setHead, 
+                         setHeadBack: this.setHeadBack, 
+                         setFocus: this.setFocus, 
+                         setFocusDown: this.setFocusDown, 
+                         setFocusUp: this.setFocusUp, 
+                         setTitle: this.setTitle});
 
         }.bind(this));
 
@@ -366,28 +366,28 @@ var Magnolial = React.createClass({
                 this.setFocus(parent.serial);
             }.bind(this);
             return (
-                <span key={parent.serial}>
-                    <span className="MAGNOLIAL_breadcrumb" onClick={onClick}>
-                        {parent.title || '...'}
-                    </span>
-                    <span className="MAGNOLIAL_breadcrumb_sym">‣</span> 
-                </span>
+                React.createElement("span", {key: parent.serial}, 
+                    React.createElement("span", {className: "MAGNOLIAL_breadcrumb", onClick: onClick}, 
+                        parent.title || '...'
+                    ), 
+                    React.createElement("span", {className: "MAGNOLIAL_breadcrumb_sym"}, "‣")
+                )
             );
         }.bind(this));
         return (
-            <div>
-                <h3>
-                    {breadcrumbs}
-                </h3>
-                <h2>
-                    <input value={head.title} onChange={function (e){
+            React.createElement("div", null, 
+                React.createElement("h3", null, 
+                    breadcrumbs
+                ), 
+                React.createElement("h2", null, 
+                    React.createElement("input", {value: head.title, onChange: function (e){
                             this.setTitle(this.state.headSerial, e.currentTarget.value);
-                        }.bind(this)}/>
-                </h2>
-                <p>{head.note}</p>
+                        }.bind(this)})
+                ), 
+                React.createElement("p", null, head.note), 
 
-                {items}
-            </div>
+                items
+            )
         );
     },
     onKeyDown: function (e){
@@ -402,9 +402,9 @@ var Magnolial = React.createClass({
     },
     render: function(){
         return (
-            <div className="MAGNOLIAL" onBlur={this.onBlur} onFocus={this.onFocus} onKeyDown={this.onKeyDown}>
-                {this.renderroot()}
-            </div>
+            React.createElement("div", {className: "MAGNOLIAL", onBlur: this.onBlur, onFocus: this.onFocus, onKeyDown: this.onKeyDown}, 
+                this.renderroot()
+            )
         );
     }
 });

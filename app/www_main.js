@@ -19065,16 +19065,16 @@ var Item = React.createClass({
     displayName: 'Item',
 
     genChildren: function () {
-        if (this.props.children === undefined) {
+        if (this.props.childs === undefined) {
             return [];
         }
         if (this.props.collapsed) {
             return [];
         }
-        return this.props.children.map(function (child, i) {
+        return this.props.childs.map(function (child, i) {
             return React.createElement(Item, { title: child.title,
                 note: child.note,
-                children: child.children,
+                childs: child.childs,
                 serial: child.serial,
                 key: child.serial,
                 collapsed: child.collapsed,
@@ -19100,7 +19100,7 @@ var Item = React.createClass({
     },
     renderDecoration: function () {
         var symbol;
-        if (this.props.children.length) {
+        if (this.props.childs.length) {
             if (this.props.collapsed) {
                 symbol = '❧';
             } else {
@@ -19171,9 +19171,9 @@ var Item = React.createClass({
         if (e.key === 'Enter') {
             e.preventDefault();
             if (e.shiftKey) {
-                if (this.props.children.length > 0) {
+                if (this.props.childs.length > 0) {
                     this.props.setHead(this.props.serial);
-                    this.props.setFocus(this.props.children[0].serial);
+                    this.props.setFocus(this.props.childs[0].serial);
                 }
             } else {
                 if (this.props.title === '') {
@@ -19194,7 +19194,7 @@ var Item = React.createClass({
                 e.preventDefault();
                 this.props.deleteItem(this.props.serial);
             } else {
-                if (this.props.title === '' && this.props.children.length === 0) {
+                if (this.props.title === '' && this.props.childs.length === 0) {
                     e.preventDefault();
                     this.props.deleteItem(this.props.serial);
                 }
@@ -19253,14 +19253,30 @@ var writeToFile = function (filename, obj) {
     fs.writeFile(filename, JSON.stringify(obj));
 };
 
+var makeSerial = function (size) {
+    var num, possible, text;
+    if (size == null) {
+        size = 5;
+    }
+    possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    text = function () {
+        var _i, _results;
+        _results = [];
+        for (num = _i = 1; 1 <= size ? _i <= size : _i >= size; num = 1 <= size ? ++_i : --_i) {
+            _results.push(possible.charAt(Math.floor(Math.random() * possible.length)));
+        }
+        return _results;
+    }();
+    return text.join();
+};
+
 var Magnolial = React.createClass({
     displayName: 'Magnolial',
 
     getInitialState() {
         return {
             root: {},
-            headSerial: 0,
-            nextSerial: 1,
+            headSerial: null,
             focus: null,
             allFocus: false
         };
@@ -19269,7 +19285,7 @@ var Magnolial = React.createClass({
         if (this.props.hasOwnProperty('initRoot')) {
             this.initializeTree(this.props.initRoot);
         } else {
-            this.initializeTree({ children: [{}] });
+            this.initializeTree({ childs: [{}] });
         }
     },
     componentWillReceiveProps(nextProps) {
@@ -19300,7 +19316,6 @@ var Magnolial = React.createClass({
     },
     initializeTree: function (root) {
         // add serials and missing fields
-        var serial = 0;
         var node_hash = {};
         var formatChild = function (child, parentSerial) {
             if (child.title === undefined) {
@@ -19309,19 +19324,18 @@ var Magnolial = React.createClass({
             if (child.note === undefined) {
                 child.note = "";
             }
-            if (child.children === undefined) {
-                child.children = [];
+            if (child.childs === undefined) {
+                child.childs = [];
             }
             if (child.collapsed === undefined) {
                 child.collapsed = false;
             }
 
             child.parentSerial = parentSerial;
-            child.serial = serial;
-            node_hash[serial] = child;
-            serial += 1;
-            for (var i = 0; i < child.children.length; i++) {
-                formatChild(child.children[i], child.serial);
+            child.serial = makeSerial();
+            node_hash[child.serial] = child;
+            for (var i = 0; i < child.childs.length; i++) {
+                formatChild(child.childs[i], child.serial);
             }
         };
         formatChild(root);
@@ -19329,7 +19343,7 @@ var Magnolial = React.createClass({
         this.setState({
             root: root,
             node_hash: node_hash,
-            nextSerial: serial
+            headSerial: root.serial
         });
     },
     collapse: function (serial, state) {
@@ -19344,7 +19358,7 @@ var Magnolial = React.createClass({
         });
     },
     setHeadBack: function (serial) {
-        if (this.state.headSerial === 0) {
+        if (this.state.headSerial === this.state.root.serial) {
             return false;
         }
         var child = this.state.node_hash[this.state.headSerial];
@@ -19360,30 +19374,29 @@ var Magnolial = React.createClass({
     },
     newItemBelow: function (serial) {
         var child = this.state.node_hash[serial];
-        var siblings = this.state.node_hash[child.parentSerial].children;
+        var siblings = this.state.node_hash[child.parentSerial].childs;
         var childIdx = siblings.indexOf(child);
         var newItem = {
             title: '',
             collapsed: false,
             note: '',
-            serial: this.state.nextSerial,
+            serial: makeSerial(),
             parentSerial: child.parentSerial,
-            children: []
+            childs: []
         };
         siblings.splice(childIdx + 1, 0, newItem);
-        this.state.node_hash[this.state.nextSerial] = newItem;
+        this.state.node_hash[newItem.serial] = newItem;
         this.setState({
             root: this.state.root,
             node_hash: this.state.node_hash,
-            focus: this.state.nextSerial,
-            nextSerial: this.state.nextSerial + 1
+            focus: newItem.serial
         });
     },
     deleteItem: function (serial) {
         var child = this.state.node_hash[serial];
-        var siblings = this.state.node_hash[child.parentSerial].children;
+        var siblings = this.state.node_hash[child.parentSerial].childs;
         var childIdx = siblings.indexOf(child);
-        if (child.parentSerial === this.state.headSerial && this.state.node_hash[this.state.headSerial].children.length <= 1) {
+        if (child.parentSerial === this.state.headSerial && this.state.node_hash[this.state.headSerial].childs.length <= 1) {
             return false;
         }
         siblings.splice(childIdx, 1);
@@ -19403,25 +19416,25 @@ var Magnolial = React.createClass({
         } else {
             var upperSib = siblings[childIdx - 1];
             var getNewFocus = function (sib) {
-                if (sib.collapsed || sib.children.length === 0) {
+                if (sib.collapsed || sib.childs.length === 0) {
                     return sib.serial;
                 }
-                return getNewFocus(sib.children[sib.children.length - 1]);
+                return getNewFocus(sib.childs[sib.childs.length - 1]);
             };
             this.setFocus(getNewFocus(upperSib));
         }
         return true;
     },
     indentItem: function (serial) {
-        // move to end of children of upper sibling
+        // move to end of childs of upper sibling
         var child = this.state.node_hash[serial];
-        var siblings = this.state.node_hash[child.parentSerial].children;
+        var siblings = this.state.node_hash[child.parentSerial].childs;
         var childIdx = siblings.indexOf(child);
         if (childIdx <= 0) {
             return false;
         }
         var upperSib = siblings[childIdx - 1];
-        upperSib.children.push(child);
+        upperSib.childs.push(child);
         upperSib.collapsed = false;
         child.parentSerial = upperSib.serial;
         siblings.splice(childIdx, 1);
@@ -19435,18 +19448,18 @@ var Magnolial = React.createClass({
             return false;
         }
         var parent = this.state.node_hash[child.parentSerial];
-        var parentSiblings = this.state.node_hash[parent.parentSerial].children;
+        var parentSiblings = this.state.node_hash[parent.parentSerial].childs;
         var parentIdx = parentSiblings.indexOf(parent);
         parentSiblings.splice(parentIdx + 1, 0, child);
         child.parentSerial = parent.parentSerial;
-        parent.children.splice(parent.children.indexOf(child), 1);
+        parent.childs.splice(parent.childs.indexOf(child), 1);
         this.setState({ root: this.state.root });
         return true;
     },
     moveItemUp: function (serial) {
         // move to above upper sibling
         var child = this.state.node_hash[serial];
-        var siblings = this.state.node_hash[child.parentSerial].children;
+        var siblings = this.state.node_hash[child.parentSerial].childs;
         var childIdx = siblings.indexOf(child);
         if (childIdx <= 0) {
             return false;
@@ -19459,7 +19472,7 @@ var Magnolial = React.createClass({
     moveItemDown: function (serial) {
         // move to below lower sibling
         var child = this.state.node_hash[serial];
-        var siblings = this.state.node_hash[child.parentSerial].children;
+        var siblings = this.state.node_hash[child.parentSerial].childs;
         var childIdx = siblings.indexOf(child);
         if (childIdx == siblings.length - 1) {
             return false;
@@ -19471,7 +19484,7 @@ var Magnolial = React.createClass({
     },
     setFocusUp: function (serial) {
         var child = this.state.node_hash[serial];
-        var siblings = this.state.node_hash[child.parentSerial].children;
+        var siblings = this.state.node_hash[child.parentSerial].childs;
         var childIdx = siblings.indexOf(child);
         if (child.parentSerial === this.state.headSerial && childIdx === 0) {
             return false;
@@ -19481,10 +19494,10 @@ var Magnolial = React.createClass({
         } else {
             var upperSib = siblings[childIdx - 1];
             var getNewFocus = function (sib) {
-                if (sib.collapsed || sib.children.length === 0) {
+                if (sib.collapsed || sib.childs.length === 0) {
                     return sib.serial;
                 }
-                return getNewFocus(sib.children[sib.children.length - 1]);
+                return getNewFocus(sib.childs[sib.childs.length - 1]);
             };
             this.setFocus(getNewFocus(upperSib));
         }
@@ -19492,12 +19505,12 @@ var Magnolial = React.createClass({
     },
     setFocusDown: function (serial) {
         var child = this.state.node_hash[serial];
-        if (!child.collapsed && child.children.length) {
-            this.setState({ focus: child.children[0].serial });
+        if (!child.collapsed && child.childs.length) {
+            this.setState({ focus: child.childs[0].serial });
             return true;
         }
 
-        var siblings = this.state.node_hash[child.parentSerial].children;
+        var siblings = this.state.node_hash[child.parentSerial].childs;
 
         var childIdx = siblings.indexOf(child);
         if (childIdx < siblings.length - 1) {
@@ -19513,9 +19526,9 @@ var Magnolial = React.createClass({
         var getNewFocus = function (parent) {
             // If parent has lower sibling return that
             if (parent.parentSerial === this.state.headSerial) {
-                var siblings = this.state.node_hash[this.state.headSerial].children;
+                var siblings = this.state.node_hash[this.state.headSerial].childs;
             } else {
-                var siblings = this.state.node_hash[parent.parentSerial].children;
+                var siblings = this.state.node_hash[parent.parentSerial].childs;
             }
             var parentIdx = siblings.indexOf(parent);
             if (parentIdx < siblings.length - 1) {
@@ -19546,8 +19559,11 @@ var Magnolial = React.createClass({
         return this.expandAllParents(parent.serial);
     },
     getParentList: function (child) {
-        if (child.parentSerial === 0) {
+        if (child.parentSerial === undefined) {
             return [];
+        }
+        if (child.parentSerial === this.state.root.serial) {
+            return [this.state.root];
         }
         var parent = this.state.node_hash[child.parentSerial];
         var parents = this.getParentList(parent);
@@ -19569,10 +19585,10 @@ var Magnolial = React.createClass({
     },
     renderroot: function () {
         var head = this.state.node_hash[this.state.headSerial];
-        var items = head.children.map(function (root, i) {
+        var items = head.childs.map(function (root, i) {
             return React.createElement(Item, { title: root.title,
                 note: root.note,
-                children: root.children,
+                childs: root.childs,
                 serial: root.serial,
                 key: root.serial,
                 collapsed: root.collapsed,
@@ -19592,9 +19608,6 @@ var Magnolial = React.createClass({
                 setFocusUp: this.setFocusUp,
                 setTitle: this.setTitle });
         }.bind(this));
-        if (this.state.headSerial === 0) {
-            return items;
-        }
 
         var parentList = this.getParentList(head);
         var breadcrumbs = parentList.map(function (parent) {
@@ -19608,7 +19621,7 @@ var Magnolial = React.createClass({
                 React.createElement(
                     'span',
                     { className: 'MAGNOLIAL_breadcrumb', onClick: onClick },
-                    parent.title
+                    parent.title || '...'
                 ),
                 React.createElement(
                     'span',
@@ -19623,19 +19636,6 @@ var Magnolial = React.createClass({
             React.createElement(
                 'h3',
                 null,
-                React.createElement(
-                    'span',
-                    { className: 'MAGNOLIAL_breadcrumb', onClick: function () {
-                            this.setHead(0);
-                            this.setFocus(0);
-                        }.bind(this) },
-                    'home'
-                ),
-                React.createElement(
-                    'span',
-                    { className: 'MAGNOLIAL_breadcrumb_sym' },
-                    '‣'
-                ),
                 breadcrumbs
             ),
             React.createElement(
