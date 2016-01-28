@@ -65,15 +65,22 @@
     font-weight: 600;
 }
 
-.MAGNOLIAL h2 {
-    font-size: 24px;
-    font-weight: 900;
+.MAGNOLIAL h3 {
+    margin: 0;
+    font-size: 18px;
     height: 20px;
+    width: 100%;
+    display: inline;
+}
+
+.MAGNOLIAL h2 {
+    margin: 0;
 }
 
 .MAGNOLIAL h2 input {
+    font-weight: 900;
     font-size: 24px;
-    width: 200px;
+    width: 100%;
 }
 
 .MAGNOLIAL_breadcrumb {

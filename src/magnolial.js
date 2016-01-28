@@ -365,7 +365,7 @@ var Magnolial = React.createClass({
         }.bind(this));
         return (
             <div>
-                <h2>
+                <h3>
                     <span className="MAGNOLIAL_breadcrumb" onClick={function(){
                         this.setHead(0);
                         this.setFocus(0);
@@ -374,9 +374,11 @@ var Magnolial = React.createClass({
                     </span>
                     <span className="MAGNOLIAL_breadcrumb_sym">‣</span> 
                     {breadcrumbs}
+                </h3>
+                <h2>
                     <input value={head.title} onChange={function (e){
-                        this.setTitle(this.state.headSerial, e.currentTarget.value);
-                    }.bind(this)}/>
+                            this.setTitle(this.state.headSerial, e.currentTarget.value);
+                        }.bind(this)}/>
                 </h2>
                 <p>{head.note}</p>
 

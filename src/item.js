@@ -35,6 +35,9 @@ var Item = React.createClass({
         if (this.props.children === undefined){
             return [];
         }
+        if (this.props.collapsed){
+            return [];
+        }
         return this.props.children.map(function(child, i){
             return <Item title={child.title}
                          note={child.note}
@@ -174,7 +177,7 @@ var Item = React.createClass({
                            allFocus={this.props.allFocus}/>
                 </h1>
                 <p>{this.props.note}</p>
-                <ul className={this.props.collapsed ? 'MAGNOLIAL_hidden' : ''}>
+                <ul>
                     {this.genChildren()}
                 </ul>
             </li>

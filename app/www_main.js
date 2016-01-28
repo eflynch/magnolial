@@ -19068,6 +19068,9 @@ var Item = React.createClass({
         if (this.props.children === undefined) {
             return [];
         }
+        if (this.props.collapsed) {
+            return [];
+        }
         return this.props.children.map(function (child, i) {
             return React.createElement(Item, { title: child.title,
                 note: child.note,
@@ -19220,7 +19223,7 @@ var Item = React.createClass({
             ),
             React.createElement(
                 'ul',
-                { className: this.props.collapsed ? 'MAGNOLIAL_hidden' : '' },
+                null,
                 this.genChildren()
             )
         );
@@ -19618,7 +19621,7 @@ var Magnolial = React.createClass({
             'div',
             null,
             React.createElement(
-                'h2',
+                'h3',
                 null,
                 React.createElement(
                     'span',
@@ -19633,7 +19636,11 @@ var Magnolial = React.createClass({
                     { className: 'MAGNOLIAL_breadcrumb_sym' },
                     '‣'
                 ),
-                breadcrumbs,
+                breadcrumbs
+            ),
+            React.createElement(
+                'h2',
+                null,
                 React.createElement('input', { value: head.title, onChange: function (e) {
                         this.setTitle(this.state.headSerial, e.currentTarget.value);
                     }.bind(this) })
