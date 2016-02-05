@@ -23,8 +23,14 @@
   },
   "homepage": "https://github.com/eflynch/magnolial",
   "dependencies": {
+    "jquery": "^2.2.0",
+    "react": "^0.14.6",
+    "react-addons-update": "^0.14.0",
+    "react-bootstrap": "^0.28.2",
+    "react-contenteditable": "^1.1.0",
     "react-dom": "^0.14.6",
-    "react": "^0.14.6"
+    "react-fontawesome": "^0.3.3",
+    "underscore": "^1.8.3"
   },
   "devDependencies": {
     "babel-preset-react": "^6.3.13",
