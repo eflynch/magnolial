@@ -35,7 +35,7 @@ var Magnolial = React.createClass({
     },
     componentWillReceiveProps(nextProps) {
         if (nextProps.hasOwnProperty('initRoot')){
-            nextProps.initRoot(nextProps.initRoot);
+            this.initRoot(nextProps.initRoot);
         }
         if (nextProps.hasOwnProperty('initHead')){
             this.setState({headSerial: nextProps.initHead});
@@ -209,4 +209,7 @@ var Magnolial = React.createClass({
     }
 });
 
-module.exports = Magnolial;
+module.exports = {
+    Magnolial: Magnolial,
+    ImmutableTree: ImmutableTree
+}
