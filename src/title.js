@@ -23,10 +23,15 @@ function placeCaretAtEnd(el) {
 
 var Title = React.createClass({
     componentDidMount() {
-        this.componentDidUpdate();
+        if (this.props.hasFocus){
+            var inputNode = ReactDOM.findDOMNode(this.refs.input);
+            if (document.activeElement !== inputNode){
+                inputNode.focus();
+            }
+        }
     },
     componentDidUpdate(prevProps, prevState) {
-        if (this.props.focus){
+        if (this.props.hasFocus){
             var inputNode = ReactDOM.findDOMNode(this.refs.input);
             if (document.activeElement !== inputNode){
                 inputNode.focus();
@@ -45,20 +50,29 @@ var Title = React.createClass({
         this.props.setValue(this.props.trunk, e.target.value);
     },
     render: function (){
-        var className = 'contenteditable';
+        var className = 'MAGNOLIAL_ce';
         if (this.props.trunk.completed){
             className += ' MAGNOLIAL_completed';
         }
-        if (this.props.readOnly){
+        if (!this.props.entryEnabled){
             className += ' MAGNOLIAL_readonly';
         }
+        if (this.props.hasFocus){
+            className += ' MAGNOLIAL_focused';
+        }
         return (
-            <ContentEditable ref='input' className={className}
-                      html={this.props.trunk.value}
-                      readOnly={this.props.readOnly}
-                      onBlur={this.onBlur}
-                      onFocus={this.onFocus}
-                      onChange={this.setValue}/>
+            <div className="MAGNOLIAL_ce_wrapper">
+                <ContentEditable className={className + " MAGNOLIAL_ce_bottom"}
+                                 ref="bottom"
+                                 html={this.props.trunk.value}
+                                 disabled={true}/>
+                <ContentEditable ref='input' className={className + " MAGNOLIAL_ce_top"}
+                                 html={this.props.trunk.value}
+                                 onKeyDown={this.props.onKeyDown}
+                                 onBlur={this.onBlur}
+                                 onFocus={this.onFocus}
+                                 onChange={this.setValue}/>
+            </div>
         );
     }
 });

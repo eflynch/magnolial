@@ -10,11 +10,22 @@ var Item = React.createClass({
         if (this.props.trunk !== nextProps.trunk){
             return true;
         }
-        if (nextProps.focus === nextProps.trunk){
+        if (this.props.hasFocus !== nextProps.hasFocus){
+            return true;
+        }
+        if (this.props.entryEnabled !== nextProps.entryEnabled){
+            return true;
+        }
+        if (nextProps.hasFocus){
+            return true;
+        }
+        var focusWasBeneath = this.props.focusAncestors.indexOf(this.props.trunk) > -1;
+        var focusIsBeneath = nextProps.focusAncestors.indexOf(nextProps.trunk) > -1;
+        if (focusWasBeneath !== focusIsBeneath){
             return true;
         }
         if (this.props.focus !== nextProps.focus){
-            if (nextProps.focusAncestors.indexOf(nextProps.trunk) > -1){
+            if (focusIsBeneath){
                 return true;
             } 
         }
@@ -31,6 +42,7 @@ var Item = React.createClass({
             return <Item trunk={child}
                          key={child._serial}
                          focus={this.props.focus}
+                         hasFocus={this.props.focus === child}
                          focusAncestors={this.props.focusAncestors}
                          setHead={this.props.setHead}
                          setFocus={this.props.setFocus}
@@ -56,17 +68,18 @@ var Item = React.createClass({
         return (
             <li>
                 <rb.Col lg={12}>
-                    <rb.Row onFocus={this.onFocus} onKeyDown={this.onKeyDown}>
+                    <rb.Row onFocus={this.onFocus}>
                         <Decoration collapseable={this.props.trunk.childs.length > 0} 
                                     collapsed={this.props.trunk.collapsed}
                                     completed={this.props.trunk.completed}
                                     toggleCollapsed={this.toggleCollapsed}
                                     setHead={this.setHead}/>
                         <Title trunk={this.props.trunk}
+                               onKeyDown={this.onKeyDown}
                                setValue={this.props.setValue}
                                setFocus={this.props.setFocus}
-                               readOnly={!this.props.entryEnabled}
-                               focus={this.props.focus === this.props.trunk}/>
+                               entryEnabled={this.props.entryEnabled}
+                               hasFocus={this.props.hasFocus}/>
                     </rb.Row>
                     <rb.Row className="MAGNOLIAL_list">
                         <ul>

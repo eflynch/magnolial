@@ -27,7 +27,7 @@ var FocusTitle = React.createClass({
         this.componentDidUpdate();
     },
     componentDidUpdate(prevProps, prevState) {
-        if (this.props.head === this.props.focus){
+        if (this.props.hasFocus){
             var inputNode = ReactDOM.findDOMNode(this.refs.input);
             if (document.activeElement !== inputNode){
                 inputNode.focus();
@@ -42,11 +42,21 @@ var FocusTitle = React.createClass({
         this.props.keyDownHandler(e, this.props.head);
     },
     render: function (){
+        var className = "MAGNOLIAL_ce MAGNOLIAL_focustitle";
+        if (this.props.hasFocus){
+            className += " MAGNOLIAL_focused";
+        }
+        if (!this.props.entryEnabled){
+            className += ' MAGNOLIAL_readonly';
+        }
         return (
             <h1 onFocus={this.onFocus}>
-                <ContentEditable ref='input' className='contenteditable MAGNOLIAL_focustitle' html={this.props.head.value} onChange={function (e){
-                    this.props.setValue(this.props.head, e.target.value);
-                }.bind(this)} onKeyDown={this.onKeyDown}/>
+                <div className="MAGNOLIAL_ce_wrapper">
+                    <ContentEditable ref='input' className={className + ' MAGNOLIAL_ce_bottom'} html={this.props.head.value} disabled={true}/>
+                    <ContentEditable ref='input' className={className + ' MAGNOLIAL_ce_top'} html={this.props.head.value} onChange={function (e){
+                        this.props.setValue(this.props.head, e.target.value);
+                    }.bind(this)} onKeyDown={this.onKeyDown}/>
+                </div>
             </h1>
         );
     }

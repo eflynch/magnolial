@@ -42,6 +42,8 @@ var FileName = React.createClass({
             this.doRead(this.props.initFilename);
         }
     },
+    componentDidMount: function(){
+    },
     handleChange: function (e){
         this.setState({filename: e.target.value});
     },
@@ -98,7 +100,7 @@ var FileName = React.createClass({
         }
     },
     render: function (){
-        var input = <input ref="input" type="text" value={this.state.filename} onChange={this.handleChange} onKeyDown={this.onKeyDown} onFocus={function(e){e.target.value = e.target.value;}} onBlur={this.handleBlur}/>;
+        var input = <input ref="input" type="text" value={this.state.filename} onChange={this.handleChange} onKeyDown={this.onKeyDown}/>;
         if (this.state.showError){
             return (
                 <div>

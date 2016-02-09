@@ -83,10 +83,10 @@ var Magnolial = React.createClass({
         this.keyDownCommon(e, child);
     },
     keyDownCommon(e, child){
-        if (e.key === 'Backspace'){
+        if (e.keyCode === 8){ // === 'Backspace'){
             if (e.shiftKey){
                 e.preventDefault();
-                this.setFocus(this.t.prefOf(child));
+                this.setFocus(this.t.predOf(child));
                 this.t.deleteItem(child);
             } else {
                 if (child.value === '' && child.childs.length === 0){
@@ -96,7 +96,7 @@ var Magnolial = React.createClass({
                 }
             }
         }
-        if (e.key === 'Enter'){
+        if (e.keyCode === 13){ // === 'Enter'){
             if (e.shiftKey){
                 return;
             }
@@ -113,7 +113,7 @@ var Magnolial = React.createClass({
                 this.setFocus(this.t.newItemBelow(child));
             }
         }
-        if (e.key === 'Tab'){
+        if (e.keyCode === 9){ // === 'Tab'){
             e.preventDefault();
             if (e.shiftKey){
                 this.t.outdentItem(child);
@@ -121,19 +121,19 @@ var Magnolial = React.createClass({
                 this.t.indentItem(child);
             }
         }
-        if (e.key === 'ArrowRight'){
+        if (e.keyCode === 39){ // 'ArrowRight'){
             if (e.shiftKey){
                 e.preventDefault();
                 this.t.indentItem(child); 
             }
         }
-        if (e.key === 'ArrowLeft'){
+        if (e.keyCode === 37){ // 'ArrowLeft'){
             if (e.shiftKey){
                 e.preventDefault();
                 this.t.outdentItem(child); 
             }
         }
-        if (e.key === 'ArrowUp'){
+        if (e.keyCode === 38){  //'ArrowUp'){
             e.preventDefault();
             if (e.shiftKey){
                 this.t.moveItemUp(child);
@@ -141,7 +141,7 @@ var Magnolial = React.createClass({
                 this.setFocus(this.t.predOf(child));
             }
         }
-        if (e.key === 'ArrowDown'){
+        if (e.keyCode === 40){ //'ArrowDown'){
             e.preventDefault();
             if (e.shiftKey){
                 if (!this.t.moveItemDown(child)){
@@ -153,11 +153,18 @@ var Magnolial = React.createClass({
         }
     },
     keyDownVimDefault: function (e, child){
-        e.preventDefault();
+        if (e.metaKey){
+            return;
+        }
+        if (e.keyCode >= 65 && e.keyCode < 91){
+            e.preventDefault();
+        }
         if (e.keyCode === 72){ // h
             if (e.shiftKey){
                 this.t.outdentItem(child); 
+            } else {
             }
+
         }
         if (e.keyCode === 74){ // j
             if (e.shiftKey){
@@ -178,13 +185,16 @@ var Magnolial = React.createClass({
         if (e.keyCode === 76){ // l
             if (e.shiftKey){
                 this.t.indentItem(child); 
+            } else {
             }
         }
         if (e.keyCode === 79){ // o
             if (e.shiftKey){
                 this.setFocus(this.t.newItemBelow(this.t.predOf(child)));
+                this.setState({MODE: 'vim-input'});
             } else {
                 this.setFocus(this.t.newItemBelow(child));
+                this.setState({MODE: 'vim-input'});
             }
         }
         if (e.keyCode === 81){ // q
@@ -201,6 +211,10 @@ var Magnolial = React.createClass({
         }
         if (e.keyCode === 65){ // a
         }
+        if (e.keyCode === 67){ // c
+            this.setValue(child, "");
+            this.setState({MODE: 'vim-input'});
+        }
         if (e.keyCode === 88){ // x
             this.setCompleted(child, !child.completed);
         }
@@ -209,15 +223,18 @@ var Magnolial = React.createClass({
             this.t.deleteItem(child);
         }
         if (e.keyCode === 32){ // space
+            e.preventDefault();
             this.setCollapsed(child, !child.collapsed);
         }
         if (e.keyCode === 190){ // >
+            e.preventDefault();
             if (child.childs.length > 0){
                 this.setHead(child);
                 this.setFocus(child.childs[0]);
             } 
         }
         if (e.keyCode === 188){ // <
+            e.preventDefault();
             var head = this.t.node_hash[this.state.headSerial];
             if (head === this.state.trunk){
                 return;
@@ -227,7 +244,7 @@ var Magnolial = React.createClass({
         }
     },
     keyDownVimInput: function (e, child){
-        if (e.key === 'Escape'){
+        if (e.keyCode === 27){ //'Escape'){
             e.preventDefault();
             this.setState({MODE: 'vim-default'});
         }
@@ -240,7 +257,7 @@ var Magnolial = React.createClass({
             }
 
         }
-        if (e.key === 'Escape'){
+        if (e.key === 27){ //'Escape'){
             e.preventDefault();
             if (e.shiftKey){
                 if (child.childs.length > 0){
@@ -296,19 +313,24 @@ var Magnolial = React.createClass({
                          keyDownHandler={this.keyDownHandler}
                          setCollapsed={this.setCollapsed}
                          entryEnabled={this.state.MODE !== 'vim-default'}
+                         hasFocus={focus === child}
                          setValue={this.setValue}/>;
 
         }.bind(this));
         return (
-            <rb.Grid className="MAGNOLIAL" onBlur={this.onBlur} onFocus={this.onFocus} onKeyDown={this.onKeyDown}>
+            <rb.Grid className="MAGNOLIAL" onBlur={this.onBlur} onFocus={this.onFocus}>
                 <rb.Row>
                     <rb.Col xs={12} lg={12}>
-                        <Breadcrumbs setHead={this.setHead} setFocus={this.setFocus} ancestors={this.t.ancestorsOf(head)}/>
+                        <Breadcrumbs setHead={this.setHead} setFocus={this.setFocus}
+                                     ancestors={this.t.ancestorsOf(head)}/>
                     </rb.Col>
                 </rb.Row>
                 <rb.Row>
                     <rb.Col xs={12} lg={12}>
-                        <FocusTitle setValue={this.setValue} setFocus={this.setFocus} focus={focus} head={head} keyDownHandler={this.keyDownHandler}/>
+                        <FocusTitle setValue={this.setValue} setFocus={this.setFocus}
+                                    hasFocus={focus === head} head={head}
+                                    keyDownHandler={this.keyDownHandler}
+                                    entryEnabled={this.state.MODE !== 'vim-default'}/>
                     </rb.Col>
                 </rb.Row>
                 <rb.Row>

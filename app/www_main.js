@@ -36900,7 +36900,7 @@ var FocusTitle = React.createClass({
         this.componentDidUpdate();
     },
     componentDidUpdate(prevProps, prevState) {
-        if (this.props.head === this.props.focus) {
+        if (this.props.hasFocus) {
             var inputNode = ReactDOM.findDOMNode(this.refs.input);
             if (document.activeElement !== inputNode) {
                 inputNode.focus();
@@ -36915,12 +36915,24 @@ var FocusTitle = React.createClass({
         this.props.keyDownHandler(e, this.props.head);
     },
     render: function () {
+        var className = "MAGNOLIAL_ce MAGNOLIAL_focustitle";
+        if (this.props.hasFocus) {
+            className += " MAGNOLIAL_focused";
+        }
+        if (!this.props.entryEnabled) {
+            className += ' MAGNOLIAL_readonly';
+        }
         return React.createElement(
             'h1',
             { onFocus: this.onFocus },
-            React.createElement(ContentEditable, { ref: 'input', className: 'contenteditable MAGNOLIAL_focustitle', html: this.props.head.value, onChange: function (e) {
-                    this.props.setValue(this.props.head, e.target.value);
-                }.bind(this), onKeyDown: this.onKeyDown })
+            React.createElement(
+                'div',
+                { className: 'MAGNOLIAL_ce_wrapper' },
+                React.createElement(ContentEditable, { ref: 'input', className: className + ' MAGNOLIAL_ce_bottom', html: this.props.head.value, disabled: true }),
+                React.createElement(ContentEditable, { ref: 'input', className: className + ' MAGNOLIAL_ce_top', html: this.props.head.value, onChange: function (e) {
+                        this.props.setValue(this.props.head, e.target.value);
+                    }.bind(this), onKeyDown: this.onKeyDown })
+            )
         );
     }
 });
@@ -37296,11 +37308,22 @@ var Item = React.createClass({
         if (this.props.trunk !== nextProps.trunk) {
             return true;
         }
-        if (nextProps.focus === nextProps.trunk) {
+        if (this.props.hasFocus !== nextProps.hasFocus) {
+            return true;
+        }
+        if (this.props.entryEnabled !== nextProps.entryEnabled) {
+            return true;
+        }
+        if (nextProps.hasFocus) {
+            return true;
+        }
+        var focusWasBeneath = this.props.focusAncestors.indexOf(this.props.trunk) > -1;
+        var focusIsBeneath = nextProps.focusAncestors.indexOf(nextProps.trunk) > -1;
+        if (focusWasBeneath !== focusIsBeneath) {
             return true;
         }
         if (this.props.focus !== nextProps.focus) {
-            if (nextProps.focusAncestors.indexOf(nextProps.trunk) > -1) {
+            if (focusIsBeneath) {
                 return true;
             }
         }
@@ -37317,6 +37340,7 @@ var Item = React.createClass({
             return React.createElement(Item, { trunk: child,
                 key: child._serial,
                 focus: this.props.focus,
+                hasFocus: this.props.focus === child,
                 focusAncestors: this.props.focusAncestors,
                 setHead: this.props.setHead,
                 setFocus: this.props.setFocus,
@@ -37347,17 +37371,18 @@ var Item = React.createClass({
                 { lg: 12 },
                 React.createElement(
                     rb.Row,
-                    { onFocus: this.onFocus, onKeyDown: this.onKeyDown },
+                    { onFocus: this.onFocus },
                     React.createElement(Decoration, { collapseable: this.props.trunk.childs.length > 0,
                         collapsed: this.props.trunk.collapsed,
                         completed: this.props.trunk.completed,
                         toggleCollapsed: this.toggleCollapsed,
                         setHead: this.setHead }),
                     React.createElement(Title, { trunk: this.props.trunk,
+                        onKeyDown: this.onKeyDown,
                         setValue: this.props.setValue,
                         setFocus: this.props.setFocus,
-                        readOnly: !this.props.entryEnabled,
-                        focus: this.props.focus === this.props.trunk })
+                        entryEnabled: this.props.entryEnabled,
+                        hasFocus: this.props.hasFocus })
                 ),
                 React.createElement(
                     rb.Row,
@@ -37465,10 +37490,11 @@ var Magnolial = React.createClass({
         this.keyDownCommon(e, child);
     },
     keyDownCommon(e, child) {
-        if (e.key === 'Backspace') {
+        if (e.keyCode === 8) {
+            // === 'Backspace'){
             if (e.shiftKey) {
                 e.preventDefault();
-                this.setFocus(this.t.prefOf(child));
+                this.setFocus(this.t.predOf(child));
                 this.t.deleteItem(child);
             } else {
                 if (child.value === '' && child.childs.length === 0) {
@@ -37478,7 +37504,8 @@ var Magnolial = React.createClass({
                 }
             }
         }
-        if (e.key === 'Enter') {
+        if (e.keyCode === 13) {
+            // === 'Enter'){
             if (e.shiftKey) {
                 return;
             }
@@ -37495,7 +37522,8 @@ var Magnolial = React.createClass({
                 this.setFocus(this.t.newItemBelow(child));
             }
         }
-        if (e.key === 'Tab') {
+        if (e.keyCode === 9) {
+            // === 'Tab'){
             e.preventDefault();
             if (e.shiftKey) {
                 this.t.outdentItem(child);
@@ -37503,19 +37531,22 @@ var Magnolial = React.createClass({
                 this.t.indentItem(child);
             }
         }
-        if (e.key === 'ArrowRight') {
+        if (e.keyCode === 39) {
+            // 'ArrowRight'){
             if (e.shiftKey) {
                 e.preventDefault();
                 this.t.indentItem(child);
             }
         }
-        if (e.key === 'ArrowLeft') {
+        if (e.keyCode === 37) {
+            // 'ArrowLeft'){
             if (e.shiftKey) {
                 e.preventDefault();
                 this.t.outdentItem(child);
             }
         }
-        if (e.key === 'ArrowUp') {
+        if (e.keyCode === 38) {
+            //'ArrowUp'){
             e.preventDefault();
             if (e.shiftKey) {
                 this.t.moveItemUp(child);
@@ -37523,7 +37554,8 @@ var Magnolial = React.createClass({
                 this.setFocus(this.t.predOf(child));
             }
         }
-        if (e.key === 'ArrowDown') {
+        if (e.keyCode === 40) {
+            //'ArrowDown'){
             e.preventDefault();
             if (e.shiftKey) {
                 if (!this.t.moveItemDown(child)) {
@@ -37535,12 +37567,17 @@ var Magnolial = React.createClass({
         }
     },
     keyDownVimDefault: function (e, child) {
-        e.preventDefault();
+        if (e.metaKey) {
+            return;
+        }
+        if (e.keyCode >= 65 && e.keyCode < 91) {
+            e.preventDefault();
+        }
         if (e.keyCode === 72) {
             // h
             if (e.shiftKey) {
                 this.t.outdentItem(child);
-            }
+            } else {}
         }
         if (e.keyCode === 74) {
             // j
@@ -37564,14 +37601,16 @@ var Magnolial = React.createClass({
             // l
             if (e.shiftKey) {
                 this.t.indentItem(child);
-            }
+            } else {}
         }
         if (e.keyCode === 79) {
             // o
             if (e.shiftKey) {
                 this.setFocus(this.t.newItemBelow(this.t.predOf(child)));
+                this.setState({ MODE: 'vim-input' });
             } else {
                 this.setFocus(this.t.newItemBelow(child));
+                this.setState({ MODE: 'vim-input' });
             }
         }
         if (e.keyCode === 81) {
@@ -37592,6 +37631,11 @@ var Magnolial = React.createClass({
         }
         if (e.keyCode === 65) {// a
         }
+        if (e.keyCode === 67) {
+            // c
+            this.setValue(child, "");
+            this.setState({ MODE: 'vim-input' });
+        }
         if (e.keyCode === 88) {
             // x
             this.setCompleted(child, !child.completed);
@@ -37603,10 +37647,12 @@ var Magnolial = React.createClass({
         }
         if (e.keyCode === 32) {
             // space
+            e.preventDefault();
             this.setCollapsed(child, !child.collapsed);
         }
         if (e.keyCode === 190) {
             // >
+            e.preventDefault();
             if (child.childs.length > 0) {
                 this.setHead(child);
                 this.setFocus(child.childs[0]);
@@ -37614,6 +37660,7 @@ var Magnolial = React.createClass({
         }
         if (e.keyCode === 188) {
             // <
+            e.preventDefault();
             var head = this.t.node_hash[this.state.headSerial];
             if (head === this.state.trunk) {
                 return;
@@ -37623,7 +37670,8 @@ var Magnolial = React.createClass({
         }
     },
     keyDownVimInput: function (e, child) {
-        if (e.key === 'Escape') {
+        if (e.keyCode === 27) {
+            //'Escape'){
             e.preventDefault();
             this.setState({ MODE: 'vim-default' });
         }
@@ -37636,7 +37684,8 @@ var Magnolial = React.createClass({
                 this.setCollapsed(child, !child.collapsed);
             }
         }
-        if (e.key === 'Escape') {
+        if (e.key === 27) {
+            //'Escape'){
             e.preventDefault();
             if (e.shiftKey) {
                 if (child.childs.length > 0) {
@@ -37692,18 +37741,20 @@ var Magnolial = React.createClass({
                 keyDownHandler: this.keyDownHandler,
                 setCollapsed: this.setCollapsed,
                 entryEnabled: this.state.MODE !== 'vim-default',
+                hasFocus: focus === child,
                 setValue: this.setValue });
         }.bind(this));
         return React.createElement(
             rb.Grid,
-            { className: 'MAGNOLIAL', onBlur: this.onBlur, onFocus: this.onFocus, onKeyDown: this.onKeyDown },
+            { className: 'MAGNOLIAL', onBlur: this.onBlur, onFocus: this.onFocus },
             React.createElement(
                 rb.Row,
                 null,
                 React.createElement(
                     rb.Col,
                     { xs: 12, lg: 12 },
-                    React.createElement(Breadcrumbs, { setHead: this.setHead, setFocus: this.setFocus, ancestors: this.t.ancestorsOf(head) })
+                    React.createElement(Breadcrumbs, { setHead: this.setHead, setFocus: this.setFocus,
+                        ancestors: this.t.ancestorsOf(head) })
                 )
             ),
             React.createElement(
@@ -37712,7 +37763,10 @@ var Magnolial = React.createClass({
                 React.createElement(
                     rb.Col,
                     { xs: 12, lg: 12 },
-                    React.createElement(FocusTitle, { setValue: this.setValue, setFocus: this.setFocus, focus: focus, head: head, keyDownHandler: this.keyDownHandler })
+                    React.createElement(FocusTitle, { setValue: this.setValue, setFocus: this.setFocus,
+                        hasFocus: focus === head, head: head,
+                        keyDownHandler: this.keyDownHandler,
+                        entryEnabled: this.state.MODE !== 'vim-default' })
                 )
             ),
             React.createElement(
@@ -37762,10 +37816,15 @@ var Title = React.createClass({
     displayName: 'Title',
 
     componentDidMount() {
-        this.componentDidUpdate();
+        if (this.props.hasFocus) {
+            var inputNode = ReactDOM.findDOMNode(this.refs.input);
+            if (document.activeElement !== inputNode) {
+                inputNode.focus();
+            }
+        }
     },
     componentDidUpdate(prevProps, prevState) {
-        if (this.props.focus) {
+        if (this.props.hasFocus) {
             var inputNode = ReactDOM.findDOMNode(this.refs.input);
             if (document.activeElement !== inputNode) {
                 inputNode.focus();
@@ -37784,19 +37843,30 @@ var Title = React.createClass({
         this.props.setValue(this.props.trunk, e.target.value);
     },
     render: function () {
-        var className = 'contenteditable';
+        var className = 'MAGNOLIAL_ce';
         if (this.props.trunk.completed) {
             className += ' MAGNOLIAL_completed';
         }
-        if (this.props.readOnly) {
+        if (!this.props.entryEnabled) {
             className += ' MAGNOLIAL_readonly';
         }
-        return React.createElement(ContentEditable, { ref: 'input', className: className,
-            html: this.props.trunk.value,
-            readOnly: this.props.readOnly,
-            onBlur: this.onBlur,
-            onFocus: this.onFocus,
-            onChange: this.setValue });
+        if (this.props.hasFocus) {
+            className += ' MAGNOLIAL_focused';
+        }
+        return React.createElement(
+            'div',
+            { className: 'MAGNOLIAL_ce_wrapper' },
+            React.createElement(ContentEditable, { className: className + " MAGNOLIAL_ce_bottom",
+                ref: 'bottom',
+                html: this.props.trunk.value,
+                disabled: true }),
+            React.createElement(ContentEditable, { ref: 'input', className: className + " MAGNOLIAL_ce_top",
+                html: this.props.trunk.value,
+                onKeyDown: this.props.onKeyDown,
+                onBlur: this.onBlur,
+                onFocus: this.onFocus,
+                onChange: this.setValue })
+        );
     }
 });
 
@@ -37855,6 +37925,7 @@ var FileName = React.createClass({
             this.doRead(this.props.initFilename);
         }
     },
+    componentDidMount: function () {},
     handleChange: function (e) {
         this.setState({ filename: e.target.value });
     },
@@ -37913,9 +37984,7 @@ var FileName = React.createClass({
         }
     },
     render: function () {
-        var input = React.createElement('input', { ref: 'input', type: 'text', value: this.state.filename, onChange: this.handleChange, onKeyDown: this.onKeyDown, onFocus: function (e) {
-                e.target.value = e.target.value;
-            }, onBlur: this.handleBlur });
+        var input = React.createElement('input', { ref: 'input', type: 'text', value: this.state.filename, onChange: this.handleChange, onKeyDown: this.onKeyDown });
         if (this.state.showError) {
             return React.createElement(
                 'div',
