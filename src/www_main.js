@@ -9,7 +9,7 @@ var userfolder = window.location.hash.slice(1);
 var preferencesFile = '~/.magnolial';
 
 var writeToFile = function (filename, obj){
-    if (fs === null || fs === undefined){return;}
+    if (!window.hasOwnProperty('fs')){return;}
     if (filename[0] === '~'){
         filename = userfolder + filename.slice(1);
     }
@@ -17,17 +17,23 @@ var writeToFile = function (filename, obj){
 }
 
 var readFromFile = function (filename){
-    if (fs === null || fs === undefined){return;}
+    if (!window.hasOwnProperty('fs')){return;}
     if (filename[0] === '~'){
         filename = userfolder + filename.slice(1);
     }
     return JSON.parse(fs.readFileSync(filename, 'utf8'));
 }
 
+var renderMagnolial = function (trunk, onUpdate, onBlur){
+    var content = document.getElementById("content");
+    ReactDOM.render(<Magnolial initTrunk={trunk} onUpdate={onUpdate} onBlur={onBlur}/>, content);
+};
+
 var FileName = React.createClass({
     getInitialState: function (){
         return {
-            filename: ""
+            filename: "",
+            showError: false
         }
     },
     componentWillMount: function (){
@@ -39,22 +45,50 @@ var FileName = React.createClass({
     handleChange: function (e){
         this.setState({filename: e.target.value});
     },
+    handleBlur: function (e){
+        if (e.relatedTarget === null){
+            document.getElementsByClassName("MAGNOLIAL_focustitle")[0].focus();
+        }
+    },
     doRead: function (filename){
+        if (filename.split('.')[filename.split('.').length - 1] !== 'mgl'){
+            this.setState({
+                showError: true,
+                errorMsg: "File-extension must be '.mgl' -- auto-save disabled"
+            });
+            return;
+        } else {
+            this.setState({showError: false});
+        }
         var doRead = _.throttle(function (){
-            var root;
+            var trunk;
             try{
-                root = readFromFile(filename).root;
+                trunk = readFromFile(filename).trunk;
             } catch(e){
-                if (e.code !== 'ENOENT') throw e;
-                root = {childs:[{}]};
-                writeToFile(filename, {root: root});
+                if (e.code != 'ENOENT') {throw e;}
+                trunk = {childs:[{}]};
+                writeToFile(filename, {trunk: trunk});
             }
-            render(root, this.doWrite);
+            renderMagnolial(trunk, this.onChange, this.onBlur);
         }.bind(this), 5000);
         doRead();
     },
-    doWrite: function (root){
-        writeToFile(this.state.filename, {root:root});
+    doWrite: function (filename, data){
+        if (filename.split('.')[filename.split('.').length - 1] !== 'mgl'){
+            return;
+        }
+        writeToFile(filename, data);
+    },
+    onChange: function(trunk){
+        this.doWrite(this.state.filename, {
+            trunk: trunk,
+            timestamp: Date.now()
+        });
+    },
+    onBlur: function (e){
+        if (e.relatedTarget === null){
+            ReactDOM.findDOMNode(this.refs.input).focus();
+        }
     },
     onKeyDown: function (e){
         if (e.key === 'Enter'){
@@ -64,19 +98,30 @@ var FileName = React.createClass({
         }
     },
     render: function (){
-        return (
-            <input type="text" value={this.state.filename} onChange={this.handleChange} onKeyDown={this.onKeyDown}/>
-        );
+        var input = <input ref="input" type="text" value={this.state.filename} onChange={this.handleChange} onKeyDown={this.onKeyDown} onFocus={function(e){e.target.value = e.target.value;}} onBlur={this.handleBlur}/>;
+        if (this.state.showError){
+            return (
+                <div>
+                    <div className="MAGNOLIAL_error">{this.state.errorMsg}</div>
+                    {input}
+                </div>
+            );
+        }
+        return input;
     }
 });
 
-var render = function (root, onUpdate){
-    var content = document.getElementById("content");
-    ReactDOM.render(<Magnolial initRoot={root} onUpdate={onUpdate}/>, content);
-};
+var getPreferences = function(){
+    var preferences = readFromFile(preferencesFile);
+    if (preferences === undefined){
+        return {lastRead: "made_a_mistake.mgl"};
+    }
+    return preferences;
+}
+
 
 document.addEventListener("DOMContentLoaded", function (){
     var filepath = document.getElementById("filepath");
-    var filename = readFromFile(preferencesFile).lastRead;
+    var filename = getPreferences().lastRead;
     ReactDOM.render(<FileName initFilename={filename}/>, filepath);
 });

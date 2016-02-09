@@ -1,6 +1,14 @@
 var React = require('react');
 var rb = require('react-bootstrap');
 
+
+var strip = function(html)
+{
+   var tmp = document.createElement("DIV");
+   tmp.innerHTML = html;
+   return tmp.textContent || tmp.innerText || "";
+}
+
 var Breadcrumbs = React.createClass({
     shouldComponentUpdate: function(nextProps, nextState){
         if (this.props === nextProps){
@@ -16,10 +24,13 @@ var Breadcrumbs = React.createClass({
             }.bind(this);
             if (!parent.value){
                 var text = '...';
-            } else if (parent.value.length > 20){
-                var text = parent.value.substring(0, 20) + '...';
             } else {
-                var text = parent.value;
+                var strippedValue = strip(parent.value);
+                if (strippedValue.length > 20){
+                    var text = strippedValue.substring(0, 20) + '...';
+                } else {
+                    var text = strippedValue;
+                }
             }
             return (
                 <span key={parent._serial}>
@@ -31,9 +42,9 @@ var Breadcrumbs = React.createClass({
             );
         }.bind(this));
         return (
-            <h3>
+            <h2>
                 {breadcrumbs}
-            </h3>
+            </h2>
         );
     }   
 });

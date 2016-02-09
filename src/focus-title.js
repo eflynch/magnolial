@@ -2,7 +2,7 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var rb = require('react-bootstrap');
 
-var ContentEditable = require('react-contenteditable').default;
+var ContentEditable = require('./contenteditable');
 
 function placeCaretAtEnd(el) {
     el.focus();
@@ -43,11 +43,11 @@ var FocusTitle = React.createClass({
     },
     render: function (){
         return (
-            <h2 onFocus={this.onFocus}>
-                <ContentEditable ref='input' className='contenteditable' html={this.props.head.value} onChange={function (e){
+            <h1 onFocus={this.onFocus}>
+                <ContentEditable ref='input' className='contenteditable MAGNOLIAL_focustitle' html={this.props.head.value} onChange={function (e){
                     this.props.setValue(this.props.head, e.target.value);
                 }.bind(this)} onKeyDown={this.onKeyDown}/>
-            </h2>
+            </h1>
         );
     }
 });

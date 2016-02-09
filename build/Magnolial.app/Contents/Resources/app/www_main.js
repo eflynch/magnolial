@@ -36809,6 +36809,12 @@ module.exports = require('./lib/React');
 var React = require('react');
 var rb = require('react-bootstrap');
 
+var strip = function (html) {
+    var tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+};
+
 var Breadcrumbs = React.createClass({
     displayName: 'Breadcrumbs',
 
@@ -36826,10 +36832,13 @@ var Breadcrumbs = React.createClass({
             }.bind(this);
             if (!parent.value) {
                 var text = '...';
-            } else if (parent.value.length > 20) {
-                var text = parent.value.substring(0, 20) + '...';
             } else {
-                var text = parent.value;
+                var strippedValue = strip(parent.value);
+                if (strippedValue.length > 20) {
+                    var text = strippedValue.substring(0, 20) + '...';
+                } else {
+                    var text = strippedValue;
+                }
             }
             return React.createElement(
                 'span',
@@ -36847,7 +36856,7 @@ var Breadcrumbs = React.createClass({
             );
         }.bind(this));
         return React.createElement(
-            'h3',
+            'h2',
             null,
             breadcrumbs
         );
@@ -36867,17 +36876,24 @@ var FontAwesome = require('react-fontawesome');
 var Decoration = React.createClass({
     displayName: 'Decoration',
 
+    onClick: function (e) {
+        if (e.metaKey) {
+            this.props.toggleCollapsed();
+        } else {
+            this.props.setHead();
+        }
+    },
     render: function () {
         if (this.props.collapseable) {
             if (this.props.collapsed) {
-                var name = 'bug';
+                var name = 'chevron-circle-right';
             } else {
-                var name = 'lemon-o';
+                var name = 'chevron-down';
             }
         } else {
-            var name = 'paw';
+            var name = 'circle';
         }
-        return React.createElement(FontAwesome, { name: name, className: 'MAGNOLIAL_decoration', onClick: this.props.toggleCollapsed });
+        return React.createElement(FontAwesome, { name: name, className: 'MAGNOLIAL_decoration', onClick: this.onClick });
     }
 });
 
@@ -36932,7 +36948,7 @@ var FocusTitle = React.createClass({
     },
     render: function () {
         return React.createElement(
-            'h2',
+            'h1',
             { onFocus: this.onFocus },
             React.createElement(ContentEditable, { ref: 'input', className: 'contenteditable', html: this.props.head.value, onChange: function (e) {
                     this.props.setValue(this.props.head, e.target.value);
@@ -37294,6 +37310,7 @@ var Item = React.createClass({
                 focus: this.props.focus,
                 focusAncestors: this.props.focusAncestors,
                 allFocus: this.props.allFocus,
+                setHead: this.props.setHead,
                 setFocus: this.props.setFocus,
                 keyDownHandler: this.props.keyDownHandler,
                 setCollapsed: this.props.setCollapsed,
@@ -37302,6 +37319,9 @@ var Item = React.createClass({
     },
     toggleCollapsed: function () {
         this.props.setCollapsed(this.props.root, !this.props.root.collapsed);
+    },
+    setHead: function () {
+        this.props.setHead(this.props.root);
     },
     onFocus: function () {
         this.props.setFocus(this.props.root);
@@ -37321,7 +37341,8 @@ var Item = React.createClass({
                     { onFocus: this.onFocus, onKeyDown: this.onKeyDown },
                     React.createElement(Decoration, { collapseable: this.props.root.childs.length > 0,
                         collapsed: this.props.root.collapsed,
-                        toggleCollapsed: this.toggleCollapsed }),
+                        toggleCollapsed: this.toggleCollapsed,
+                        setHead: this.setHead }),
                     React.createElement(Title, { root: this.props.root,
                         setValue: this.props.setValue,
                         setFocus: this.props.setFocus,
@@ -37329,7 +37350,7 @@ var Item = React.createClass({
                 ),
                 React.createElement(
                     rb.Row,
-                    null,
+                    { className: 'MAGNOLIAL_list' },
                     React.createElement(
                         'ul',
                         null,
@@ -37479,10 +37500,12 @@ var Magnolial = React.createClass({
                     this.setFocus(child.childs[0]);
                 }
             } else {
-                if (child === this.state.root || this.t.parentOf(child) === this.state.root) {
+                var head = this.t.node_hash[this.state.headSerial];
+                if (head === this.state.root) {
                     return;
                 }
-                this.setHead(this.t.parentOf(this.t.parentOf(child)));
+                this.setHead(this.t.parentOf(head));
+                this.setFocus(this.t.parentOf(head));
             }
         }
         if (e.key === 'Backspace') {
@@ -37503,6 +37526,7 @@ var Magnolial = React.createClass({
     // Focus Relevant (internal state)
     setHead: function (child) {
         this.props.onUpdate(this.state.root, child._serial, this.state.focusSerial);
+        this.t.setCollapsed(child, false);
         this.setState({
             headSerial: child._serial
         });
@@ -37531,6 +37555,7 @@ var Magnolial = React.createClass({
                 focus: focus,
                 focusAncestors: this.t.ancestorsOf(focus),
                 allFocus: this.state.allFocus,
+                setHead: this.setHead,
                 setFocus: this.setFocus,
                 keyDownHandler: this.keyDownHandler,
                 setCollapsed: this.setCollapsed,
@@ -37691,7 +37716,9 @@ var FileName = React.createClass({
             try {
                 root = readFromFile(filename).root;
             } catch (e) {
-                if (e.code !== 'ENOENT') throw e;
+                if (e.code != 'ENOENT') {
+                    throw e;
+                }
                 root = { childs: [{}] };
                 writeToFile(filename, { root: root });
             }

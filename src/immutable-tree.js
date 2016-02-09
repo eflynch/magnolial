@@ -1,9 +1,11 @@
 var update = require('react-addons-update');
 
 class ImmutableTree {
-    constructor(root, onMutate){
-        this.root = root;
-        this.node_hash = ImmutableTree.formatRoot(root);
+    constructor(trunk, onMutate){
+        this.undos = [trunk];
+        this.redos = [];
+        this.trunk = trunk;
+        this.node_hash = ImmutableTree.formatTrunk(trunk);
         this.onMutate = onMutate || function (){};
     }
 
@@ -22,7 +24,7 @@ class ImmutableTree {
         return text.join('');
     }
 
-    static formatRoot(root){
+    static formatTrunk(trunk){
         var node_hash = {};
         var formatChild = function (child, _parent){
             if (child.value === undefined){
@@ -34,6 +36,9 @@ class ImmutableTree {
             if (child.collapsed === undefined){
                 child.collapsed = false;
             }
+            if (child.completed === undefined){
+                child.completed = false;
+            }
 
             child._parent = _parent;
             child._serial = ImmutableTree.makeSerial();
@@ -42,17 +47,17 @@ class ImmutableTree {
                 formatChild(child.childs[i], child._serial);
             }
         };
-        formatChild(root, undefined);
+        formatChild(trunk, undefined);
         return node_hash;
     }
 
-    _fixNodeHash(root){
-        if (root === this.node_hash[root._serial]){
+    _fixNodeHash(trunk){
+        if (trunk === this.node_hash[trunk._serial]){
             return;
         }
-        this.node_hash[root._serial] = root;
-        for (var i=0; i < root.childs.length; i++){
-            this._fixNodeHash(root.childs[i]);
+        this.node_hash[trunk._serial] = trunk;
+        for (var i=0; i < trunk.childs.length; i++){
+            this._fixNodeHash(trunk.childs[i]);
         }
     }
 
@@ -73,16 +78,47 @@ class ImmutableTree {
             iter = newHash;
         }
         return {
-            hashRoot: hash,
+            hashTrunk: hash,
             target: iter
         };
     }
 
     applyHash(hash){
-        var newRoot = update(this.root, hash.hashRoot);
-        this._fixNodeHash(newRoot);
-        this.onMutate(newRoot);
-        this.root = newRoot;
+        var newTrunk = update(this.trunk, hash.hashTrunk);
+        this._fixNodeHash(newTrunk);
+        this.onMutate(newTrunk);
+        if (this.undos.length > 10){
+            this.undos.pop();
+        }
+        this.undos.unshift(this.trunk);
+        this.redos = [];
+        this.trunk = newTrunk;
+    }
+
+    undo(){
+        if (this.undos.length){
+            if (this.redos.length > 10){
+                this.redos.pop();
+            }
+            this.redos.unshift(this.trunk);
+            var newTrunk = this.undos.shift();
+            this._fixNodeHash(newTrunk);
+            this.onMutate(newTrunk);
+            this.trunk = newTrunk;
+        }
+    }
+
+    redo(){
+        if (this.redos.length){
+            var newTrunk = this.redos.shift();
+            this._fixNodeHash(newTrunk);
+            this.onMutate(newTrunk);
+            if (this.undos.length > 10){
+                this.undos.pop();
+            }
+            this.undos.unshift(this.trunk);
+            this.trunk = newTrunk;
+        }
     }
 
     ancestorsOf(target){
@@ -106,17 +142,17 @@ class ImmutableTree {
     }
 
     predOf(child){
-        if (child === this.root){
+        if (child === this.trunk){
             return undefined;
         }
         if (this.indexOf(child) === 0){
             return this.parentOf(child);
         }
-        var lowestOpenLeaf = function (root){
-            if (root.collapsed || root.childs.length === 0){
-                return root;
+        var lowestOpenLeaf = function (trunk){
+            if (trunk.collapsed || trunk.childs.length === 0){
+                return trunk;
             }
-            return lowestOpenLeaf(root.childs[root.childs.length - 1]);
+            return lowestOpenLeaf(trunk.childs[trunk.childs.length - 1]);
         }
         return lowestOpenLeaf(this.parentOf(child).childs[this.indexOf(child) - 1]);
 
@@ -132,12 +168,12 @@ class ImmutableTree {
             return this.parentOf(child).childs[childIdx + 1];
         }
 
-        var findIt = function (root){
-            if (root === this.root){
+        var findIt = function (trunk){
+            if (trunk === this.trunk){
                 return undefined;
             }
-            var parent = this.parentOf(root);
-            var childIdx = this.indexOf(root);
+            var parent = this.parentOf(trunk);
+            var childIdx = this.indexOf(trunk);
             if (childIdx < parent.childs.length - 1){
                 return parent.childs[childIdx + 1];
             }
@@ -153,13 +189,19 @@ class ImmutableTree {
         return this.parentOf(child).childs.indexOf(child);
     }
 
-    getRoot(){
-        return this.root;
+    getTrunk(){
+        return this.trunk;
     }
 
     setCollapsed(child, state){
         var hash = this.generateHash(child);
         hash.target.collapsed = {$set: state};
+        this.applyHash(hash);
+    }
+
+    setCompleted(child, state){
+        var hash = this.generateHash(child);
+        hash.target.completed = {$set: state};
         this.applyHash(hash);
     }
 
@@ -170,8 +212,8 @@ class ImmutableTree {
     }
 
     newItemBelow(child){
-        // Ignore if Root
-        if (child === this.root){
+        // Ignore if Trunk
+        if (child === this.trunk){
             return false;
         }
 
@@ -191,11 +233,11 @@ class ImmutableTree {
     }
 
     deleteItem(child){
-        // Ignore if Root
-        if (child === this.root){
+        // Ignore if Trunk
+        if (child === this.trunk){
             return false;
         }
-        if (this.parentOf(child) === this.root && this.root.childs.length === 1){
+        if (this.parentOf(child) === this.trunk && this.trunk.childs.length === 1){
             return false;
         }
         var childIdx = this.indexOf(child);
@@ -208,8 +250,8 @@ class ImmutableTree {
     }
 
     indentItem(child){
-        // Ignore if Root
-        if (child === this.root){
+        // Ignore if Trunk
+        if (child === this.trunk){
             return false;
         }
         // Ignore if First Child
@@ -233,13 +275,13 @@ class ImmutableTree {
     }
 
     outdentItem(child){
-        // Ignore if Root
-        if (child === this.root){
+        // Ignore if Trunk
+        if (child === this.trunk){
             return false;
         }
 
-        // Ignore if Child of Root
-        if (this.parentOf(child) === this.root){
+        // Ignore if Child of Trunk
+        if (this.parentOf(child) === this.trunk){
             return false;
         }
 
@@ -261,8 +303,8 @@ class ImmutableTree {
     }
 
     moveItemUp(child){
-        // Ignore if Root
-        if (child === this.root){
+        // Ignore if Trunk
+        if (child === this.trunk){
             return false;
         }
 
@@ -282,8 +324,8 @@ class ImmutableTree {
     }
 
     moveItemDown(child){
-        // Ignore if Root
-        if (child === this.root){
+        // Ignore if Trunk
+        if (child === this.trunk){
             return false;
         }
 

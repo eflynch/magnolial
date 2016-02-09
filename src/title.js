@@ -1,6 +1,7 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
-var ContentEditable = require('react-contenteditable').default;
+
+var ContentEditable = require('./contenteditable');
 
 function placeCaretAtEnd(el) {
     el.focus();
@@ -41,12 +42,20 @@ var Title = React.createClass({
         placeCaretAtEnd(ReactDOM.findDOMNode(this.refs.input));
     },
     setValue: function (e){
-        this.props.setValue(this.props.root, e.target.value);
+        this.props.setValue(this.props.trunk, e.target.value);
     },
     render: function (){
+        var className = 'contenteditable';
+        if (this.props.trunk.completed){
+            className += ' MAGNOLIAL_completed';
+        }
+        if (this.props.readOnly){
+            className += ' MAGNOLIAL_readonly';
+        }
         return (
-            <ContentEditable ref='input' className='contenteditable'
-                      html={this.props.root.value}
+            <ContentEditable ref='input' className={className}
+                      html={this.props.trunk.value}
+                      readOnly={this.props.readOnly}
                       onBlur={this.onBlur}
                       onFocus={this.onFocus}
                       onChange={this.setValue}/>

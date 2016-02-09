@@ -10,26 +10,20 @@ input {
 }
 
 .MAGNOLIAL {
-    padding-top: 30px;
+    padding-top: 20px;
     padding-bottom: 30px;
     font-family: sans-serif;
     background-color: #FDF5DB;
     color: #1C8173;
 }
 
-.MAGNOLIAL h1 {
-    font-weight: 500;
-    font-size: 16;
-    margin: 0;
-    color: #1C8173;
-}
-
 .MAGNOLIAL_decoration {
-    font-size: 20px !important;
-    margin-right: 10px;
+    width: 15px;
+    font-size: 16px !important;
+    margin-right: 5px;
+    margin-top: 2px;
     vertical-align: top;
     display: inline-block;
-    width: 18px;
     cursor: pointer;
     -moz-user-select: none; 
     -khtml-user-select: none; 
@@ -56,7 +50,9 @@ input {
 
 .MAGNOLIAL li {
     list-style: none;
-    padding-top: 5px;
+}
+
+.MAGNOLIAL_list {
 }
 
 .MAGNOLIAL_hidden {
@@ -72,8 +68,8 @@ input {
     padding: 0;
     margin: 0;
     font-weight: 500;
+    font-size: 16px;
     font-family: sans-serif;
-    font-size: 20;
     width: 90%;
 }
 
@@ -82,21 +78,21 @@ input {
 }
 
 
-.MAGNOLIAL h3 {
-    margin: 0;
-    font-size: 18px;
-    height: 20px;
-    width: 100%;
-    display: inline;
-}
-
 .MAGNOLIAL h2 {
     margin: 0;
+    padding-bottom: 10px;
+    font-size: 16px;
+    width: 100%;
 }
 
-.MAGNOLIAL h2 div.contenteditable { 
+.MAGNOLIAL h1 {
+    padding-bottom: 10px;
+    margin: 0;
+}
+
+.MAGNOLIAL h1 div.contenteditable { 
     font-weight: 900;
-    font-size: 24px;
+    font-size: 18px;
     width: 100%;
 }
 
