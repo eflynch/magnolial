@@ -31,6 +31,16 @@ input {
     -o-user-select: none; 
 }
 
+.MAGNOLIAL .MAGNOLIAL_decoration.MAGNOLIAL_completed {
+    color: gray;
+}
+
+.MAGNOLIAL_error {
+    color: red;
+    padding-left: 5px;
+}
+
+
 .MAGNOLIAL p {
     color: #946600;
     font-size: 12;
@@ -59,10 +69,33 @@ input {
     display: none;
 }
 
-.MAGNOLIAL div.contenteditable {
+.MAGNOLIAL div.MAGNOLIAL_ce_wrapper {
     display: inline-block;
-    background-color: #FDF5DB;
+    position: relative;
+    padding: 0;
+    margin: 0;
+    width: 90%;
+}
+
+.MAGNOLIAL div.MAGNOLIAL_ce_top {
+    position:absolute;
+    top: 0;
+    left: 0;
+    color: transparent;
+    z-index: 1;
+    min-width: 100px;
+    min-height: 22px;
+}
+
+.MAGNOLIAL div.MAGNOLIAL_ce_bottom {
     color: #1C8173;
+    z-index: 0;
+    min-width: 100px;
+    min-height: 22px;
+}
+
+.MAGNOLIAL div.MAGNOLIAL_ce {
+    display: inline-block;
     outline: none;
     border: none;
     padding: 0;
@@ -70,13 +103,24 @@ input {
     font-weight: 500;
     font-size: 16px;
     font-family: sans-serif;
-    width: 90%;
 }
 
-.MAGNOLIAL div.contenteditable:focus {
+.MAGNOLIAL div.MAGNOLIAL_ce_bottom.MAGNOLIAL_focused {
+    background-color: #E6DFC2;
+}
+
+.MAGNOLIAL div.MAGNOLIAL_ce_top.MAGNOLIAL_focused{
     color: #1A74CB;
 }
 
+.MAGNOLIAL div.MAGNOLIAL_ce.MAGNOLIAL_completed {
+    text-decoration: line-through;
+    color: gray;
+}
+
+.MAGNOLIAL div.MAGNOLIAL_ce_top.MAGNOLIAL_readonly {
+    color:transparent!important;
+}
 
 .MAGNOLIAL h2 {
     margin: 0;
@@ -90,7 +134,7 @@ input {
     margin: 0;
 }
 
-.MAGNOLIAL h1 div.contenteditable { 
+.MAGNOLIAL h1 div.MAGNOLIAL_ce { 
     font-weight: 900;
     font-size: 18px;
     width: 100%;

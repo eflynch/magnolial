@@ -5,8 +5,39 @@ body {
 input {
     outline: none;
     background-color:#FDF5DB;
-    width: 100%;
+    width: 48%;
     color: gray !important;
+    border-radius: 5px;
+    padding: 3px;
+}
+
+input:focus {
+    color: black !important;
+    background-color: #E6DFC2;
+}
+
+.MAGNOLIAL_autosave {
+    border-color: #396FA9;
+}
+
+.MAGNOLIAL_seperator {
+    background-color: transparent;
+    border: none;
+    font-size: 16;
+    border-radius: 5px;
+    margin-left: 3px;
+    margin-right: 3px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    outline: none;
+    display: inline-block;
+    text-align: center;
+    width: 3%;
+    min-width: 20px
+}
+
+.MAGNOLIAL_seperator:focus {
+    background-color: #E6DFC2;
 }
 
 .MAGNOLIAL {
@@ -107,10 +138,19 @@ input {
 
 .MAGNOLIAL div.MAGNOLIAL_ce_bottom.MAGNOLIAL_focused {
     background-color: #E6DFC2;
+    border-radius: 3px;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 1px;
+    padding-bottom: 1px;
 }
 
 .MAGNOLIAL div.MAGNOLIAL_ce_top.MAGNOLIAL_focused{
     color: #1A74CB;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 1px;
+    padding-bottom: 1px;
 }
 
 .MAGNOLIAL div.MAGNOLIAL_ce.MAGNOLIAL_completed {

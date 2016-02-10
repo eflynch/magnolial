@@ -9,6 +9,26 @@ class ImmutableTree {
         this.onMutate = onMutate || function (){};
     }
 
+    static makeEmptyTrunk(){
+        return {
+            childs: [{childs:[], collapsed: false, completed: false, value:""}],
+            value: "",
+            collapsed: false,
+            completed: false
+        }
+    }
+
+    static makeChild(parentSerial){
+        return {
+            value: '',
+            collapsed: false,
+            completed: false,
+            _serial: ImmutableTree.makeSerial(),
+            _parent: parentSerial,
+            childs: []
+        }
+    }
+
     static makeSerial(size) {
         if (size == null) {
             size = 5;
@@ -218,16 +238,25 @@ class ImmutableTree {
         }
 
         var childIdx = this.indexOf(child);
-        var newItem = {
-            value: '',
-            collapsed: false,
-            _serial: ImmutableTree.makeSerial(),
-            _parent: child._parent,
-            childs: []
-        }
+        var newItem = ImmutableTree.makeChild(child._parent);
         this.node_hash[newItem._serial] = newItem;
         var hash = this.generateHash(this.parentOf(child));
         hash.target.childs = {$splice: [[childIdx + 1, 0, newItem]]};
+        this.applyHash(hash);
+        return newItem;
+    }
+
+    newItemAbove(child){
+        // Ignore if Trunk
+        if (child === this.trunk){
+            return false;
+        }
+
+        var childIdx = this.indexOf(child);
+        var newItem = ImmutableTree.makeChild(child._parent);
+        this.node_hash[newItem._serial] = newItem;
+        var hash = this.generateHash(this.parentOf(child));
+        hash.target.childs = {$splice: [[childIdx, 0, newItem]]};
         this.applyHash(hash);
         return newItem;
     }

@@ -47,7 +47,9 @@ var Title = React.createClass({
         placeCaretAtEnd(ReactDOM.findDOMNode(this.refs.input));
     },
     setValue: function (e){
-        this.props.setValue(this.props.trunk, e.target.value);
+        if (e.target.value !== this.props.trunk.value){
+            this.props.setValue(this.props.trunk, e.target.value);
+        }
     },
     render: function (){
         var className = 'MAGNOLIAL_ce';

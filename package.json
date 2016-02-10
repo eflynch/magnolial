@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/eflynch/magnolial",
   "dependencies": {
+    "detect-node": "^2.0.3",
     "jquery": "^2.2.0",
     "react": "^0.14.6",
     "react-addons-update": "^0.14.0",

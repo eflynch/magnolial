@@ -190,7 +190,7 @@ var Magnolial = React.createClass({
         }
         if (e.keyCode === 79){ // o
             if (e.shiftKey){
-                this.setFocus(this.t.newItemBelow(this.t.predOf(child)));
+                this.setFocus(this.t.newItemAbove(child));
                 this.setState({MODE: 'vim-input'});
             } else {
                 this.setFocus(this.t.newItemBelow(child));
@@ -198,7 +198,7 @@ var Magnolial = React.createClass({
             }
         }
         if (e.keyCode === 81){ // q
-            this.exit();
+            this.openA();
         }
         if (e.keyCode === 85){ // u
             this.t.undo();
@@ -214,6 +214,9 @@ var Magnolial = React.createClass({
         if (e.keyCode === 67){ // c
             this.setValue(child, "");
             this.setState({MODE: 'vim-input'});
+        }
+        if (e.keyCode === 87){ // w
+            this.openB();
         }
         if (e.keyCode === 88){ // x
             this.setCompleted(child, !child.completed);
@@ -287,13 +290,15 @@ var Magnolial = React.createClass({
         if (child === undefined){
             return;
         }
-        this.props.onUpdate(this.state.trunk, this.state.headSerial, child._serial);
         this.setState({
             focusSerial: child._serial
         });
     },
-    exit: function (){
-        this.props.onBlur({relatedTarget: null});
+    openA: function (){
+        this.props.onBlur({relatedTarget: "a"});
+    },
+    openB: function (){
+        this.props.onBlur({relatedTarget: "b"})
     },
     onBlur: function(e){
         this.setState({focusSerial: null});
@@ -343,7 +348,4 @@ var Magnolial = React.createClass({
     }
 });
 
-module.exports = {
-    Magnolial: Magnolial,
-    ImmutableTree: ImmutableTree
-}
+module.exports = Magnolial;

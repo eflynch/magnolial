@@ -1,51 +1,65 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 var _ = require('underscore');
+var FontAwesome = require('react-fontawesome');
 
-var Magnolial = require('./magnolial').Magnolial;
+var Magnolial = require('./magnolial');
+var ImmutableTree = require('./immutable-tree');
+var IO = require('./magnolial-io')
 
-var userfolder = window.location.hash.slice(1);
-
-var preferencesFile = '~/.magnolial';
-
-var writeToFile = function (filename, obj){
-    if (!window.hasOwnProperty('fs')){return;}
-    if (filename[0] === '~'){
-        filename = userfolder + filename.slice(1);
-    }
-    fs.writeFile(filename, JSON.stringify(obj)); 
-}
-
-var readFromFile = function (filename){
-    if (!window.hasOwnProperty('fs')){return;}
-    if (filename[0] === '~'){
-        filename = userfolder + filename.slice(1);
-    }
-    return JSON.parse(fs.readFileSync(filename, 'utf8'));
-}
 
 var renderMagnolial = function (trunk, onUpdate, onBlur){
     var content = document.getElementById("content");
     ReactDOM.render(<Magnolial initTrunk={trunk} onUpdate={onUpdate} onBlur={onBlur}/>, content);
 };
 
+var validateFilename = function(filename){
+    return filename.split('.')[filename.split('.').length - 1] === 'mgl';
+}
+
+var validateFile = function (file){
+    if (file === undefined){
+        return false;
+    }
+    if (file === null){
+        return false;
+    }
+    if (!file.hasOwnProperty('trunk')){
+        return false;
+    }
+    if (!file.trunk.hasOwnProperty('childs')){
+        return false;
+    }
+    return true;
+}
+
+
 var FileName = React.createClass({
     getInitialState: function (){
         return {
-            filename: "",
-            showError: false
+            aFilename: "",
+            bFilename: "",
+            showError: false,
+            autoSaveA: false,
+            autoSaveB: false
+
         }
     },
     componentWillMount: function (){
-        if (this.props.hasOwnProperty('initFilename')){
-            this.setState({filename: this.props.initFilename});
-            this.doRead(this.props.initFilename);
-        }
+        var prefs = IO.getPrefs();
+
+        this.setState({
+            aFilename: prefs.lastReadA,
+            bFilename: prefs.lastReadB
+        });
+        this.doRead(prefs.lastReadA);
+        this.setState({autoSaveA: true, autoSaveB: false});
     },
-    componentDidMount: function(){
+    handleAChange: function (e){
+        this.setState({aFilename: e.target.value});
     },
-    handleChange: function (e){
-        this.setState({filename: e.target.value});
+    handleBChange: function (e){
+        this.setState({bFilename: e.target.value});
     },
     handleBlur: function (e){
         if (e.relatedTarget === null){
@@ -53,77 +67,128 @@ var FileName = React.createClass({
         }
     },
     doRead: function (filename){
-        if (filename.split('.')[filename.split('.').length - 1] !== 'mgl'){
+        if (!validateFilename(filename)){
             this.setState({
                 showError: true,
                 errorMsg: "File-extension must be '.mgl' -- auto-save disabled"
             });
             return;
-        } else {
-            this.setState({showError: false});
-        }
-        var doRead = _.throttle(function (){
-            var trunk;
-            try{
-                trunk = readFromFile(filename).trunk;
-            } catch(e){
-                if (e.code != 'ENOENT') {throw e;}
-                trunk = {childs:[{}]};
-                writeToFile(filename, {trunk: trunk});
+        } 
+
+        this.setState({showError: false});
+
+        var onSuccess = function(file){
+            if (!validateFile(file)){
+                return;
             }
-            renderMagnolial(trunk, this.onChange, this.onBlur);
-        }.bind(this), 5000);
-        doRead();
-    },
-    doWrite: function (filename, data){
-        if (filename.split('.')[filename.split('.').length - 1] !== 'mgl'){
-            return;
-        }
-        writeToFile(filename, data);
+            renderMagnolial(file.trunk, this.onChange, this.onBlur);
+        }.bind(this);
+
+        var onFailure = function (e){
+            if (e.status === 404){
+                var trunk = ImmutableTree.makeEmptyTrunk();
+                IO.post(filename, {trunk: trunk});
+                renderMagnolial(trunk, this.onChange, this.onBlur); 
+            } else {
+                this.setState({showError: true, errorMsg: "An error occurred"});
+            }
+        }.bind(this);
+
+        _.throttle(function (){
+            IO.get(filename, onSuccess, onFailure);
+        }.bind(this), 5000)();
     },
     onChange: function(trunk){
-        this.doWrite(this.state.filename, {
-            trunk: trunk,
-            timestamp: Date.now()
-        });
+        var timestamp = Date.now();
+        if (this.state.autoSaveA){
+            if (!validateFilename(this.state.aFilename)){
+                return;
+            }
+            IO.patch(this.state.aFilename, {
+                trunk: trunk,
+                timestamp: timestamp
+            }); 
+        }
+        if (this.state.autoSaveB){
+            if (!validateFilename(this.state.bFilename)){
+                return;
+            }
+            IO.patch(this.state.bFilename, {
+                trunk: trunk,
+                timestamp: timestamp
+            }); 
+        }
     },
     onBlur: function (e){
-        if (e.relatedTarget === null){
-            ReactDOM.findDOMNode(this.refs.input).focus();
+        if (e.relatedTarget === "a"){
+            ReactDOM.findDOMNode(this.refs.a).focus();
+        }
+        if (e.relatedTarget === "b"){
+            ReactDOM.findDOMNode(this.refs.b).focus();
         }
     },
-    onKeyDown: function (e){
+    handleAFocus: function (e){
+        var tempVal = ReactDOM.findDOMNode(this.refs.a).value;
+        ReactDOM.findDOMNode(this.refs.a).value = tempVal;
+    },
+    handleAFocus: function (e){
+        var tempVal = ReactDOM.findDOMNode(this.refs.b).value;
+        ReactDOM.findDOMNode(this.refs.b).value = tempVal;
+    },
+    handleAKeyDown: function (e){
         if (e.key === 'Enter'){
             e.preventDefault();
-            this.doRead(this.state.filename);
-            writeToFile(preferencesFile, {lastRead: this.state.filename});
+            this.doRead(this.state.aFilename);
+            this.setState({autoSaveA: true, autoSaveB: false});
+            IO.updatePrefs({lastReadA: this.state.aFilename});
         }
     },
-    render: function (){
-        var input = <input ref="input" type="text" value={this.state.filename} onChange={this.handleChange} onKeyDown={this.onKeyDown}/>;
-        if (this.state.showError){
-            return (
-                <div>
-                    <div className="MAGNOLIAL_error">{this.state.errorMsg}</div>
-                    {input}
-                </div>
-            );
+    handleBKeyDown: function (e){
+        if (e.key === 'Enter'){
+            e.preventDefault();
+            this.doRead(this.state.bFilename);
+            this.setState({autoSaveB: true, autoSaveA: false});
+            IO.updatePrefs({lastReadB: this.state.bFilename});
         }
-        return input;
+    },
+    handleClick: function (e){
+        IO.sync(this.state.aFilename, this.state.bFilename, function(){
+            this.doRead(this.state.aFilename);
+            this.setState({autoSaveA: true, autoSaveB: true});
+        }.bind(this), function(){console.log("failed");});
+    },
+    render: function (){
+        if (this.state.autoSaveA && this.state.autoSaveB){
+            var symbol = <FontAwesome name='link' color={{color:'blue'}}/>;
+        } else {
+            var symbol = <FontAwesome name='chain-broken' style={{color:'gray'}}/>;
+        }
+        return (
+            <div>
+                <div className="MAGNOLIAL_error" style={{display: this.state.showError ? 'none' : 'block'}}>{this.state.errorMsg}</div>
+                <input ref="a"
+                       className={this.state.autoSaveA ? "MAGNOLIAL_autosave" : ""}
+                       type="text"
+                       value={this.state.aFilename}
+                       onChange={this.handleAChange}
+                       onKeyDown={this.handleAKeyDown}
+                       onFocus={this.handleAFocus}/>
+                <button className="MAGNOLIAL_seperator" onClick={this.handleClick}>{symbol}</button>
+                <input ref="b"
+                       className={this.state.autoSaveB ? "MAGNOLIAL_autosave" : ""}
+                       type="text"
+                       value={this.state.bFilename}
+                       onChange={this.handleBChange}
+                       onKeyDown={this.handleBKeyDown}
+                       onFocus={this.handleBFocus}/>
+            </div>
+        );
     }
 });
 
-var getPreferences = function(){
-    var preferences = readFromFile(preferencesFile);
-    if (preferences === undefined){
-        return {lastRead: "made_a_mistake.mgl"};
-    }
-    return preferences;
-}
 
 
 document.addEventListener("DOMContentLoaded", function (){
     var filepath = document.getElementById("filepath");
-    var filename = getPreferences().lastRead;
-    ReactDOM.render(<FileName initFilename={filename}/>, filepath);
+    ReactDOM.render(<FileName/>, filepath);
 });
