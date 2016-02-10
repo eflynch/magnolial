@@ -1,5 +1,6 @@
 ###Custom###
 .module-cache
+build/
 
 ###Node###
 
