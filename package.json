@@ -4,7 +4,6 @@
   "description": "Workflowy-inspired self-hosted nested list webapp",
   "main": "dist/magnolial.js",
   "scripts": {
-    "prepublish": "jsx ./src ./dist"
   },
   "repository": {
     "type": "git",
