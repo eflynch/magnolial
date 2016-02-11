@@ -7,7 +7,6 @@ var Magnolial = require('./magnolial');
 var ImmutableTree = require('./immutable-tree');
 var IO = require('./magnolial-io')
 
-
 var renderMagnolial = function (trunk, onUpdate, onBlur){
     var content = document.getElementById("content");
     ReactDOM.render(<Magnolial initTrunk={trunk} onUpdate={onUpdate} onBlur={onBlur}/>, content);
