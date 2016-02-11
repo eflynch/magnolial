@@ -156,15 +156,11 @@ var Magnolial = React.createClass({
         if (e.metaKey){
             return;
         }
-        if (e.keyCode >= 65 && e.keyCode < 91){
-            e.preventDefault();
-        }
+        e.preventDefault();
         if (e.keyCode === 72){ // h
             if (e.shiftKey){
                 this.t.outdentItem(child); 
-            } else {
             }
-
         }
         if (e.keyCode === 74){ // j
             if (e.shiftKey){
@@ -290,6 +286,11 @@ var Magnolial = React.createClass({
         if (child === undefined){
             return;
         }
+        if (child._serial !== this.state.headSerial){
+            if (this.t.ancestorsOf(child).indexOf(this.t.node_hash[this.state.headSerial]) < 0){
+                return;
+            }
+        }
         this.setState({
             focusSerial: child._serial
         });
@@ -320,7 +321,6 @@ var Magnolial = React.createClass({
                          entryEnabled={this.state.MODE !== 'vim-default'}
                          hasFocus={focus === child}
                          setValue={this.setValue}/>;
-
         }.bind(this));
         return (
             <rb.Grid className="MAGNOLIAL" onBlur={this.onBlur} onFocus={this.onFocus}>

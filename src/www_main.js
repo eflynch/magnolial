@@ -98,7 +98,7 @@ var FileName = React.createClass({
             IO.get(filename, onSuccess, onFailure);
         }.bind(this), 5000)();
     },
-    onChange: function(trunk){
+    onChange: function(trunk, headSerial){
         var timestamp = Date.now();
         if (this.state.autoSaveA){
             if (!validateFilename(this.state.aFilename)){

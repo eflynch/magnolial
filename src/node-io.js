@@ -3,8 +3,8 @@ var _ = require('underscore');
 var ajax = require('./ajax');
 
 var userfolder = window.location.hash.slice(1);
-var preferencesFile = 'magnolial.prefs';
-var configFile = '~/magnolial.rc';
+var preferencesFile = '~/.magnolial/magnolia.prefs';
+var configFile = '~/.magnolial/magnolial.rc';
 
 var writeToFile = function (filename, obj){
     if (filename[0] === '~'){
