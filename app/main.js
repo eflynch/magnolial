@@ -1,7 +1,7 @@
 var app = require('app');
 var BrowserWindow = require('browser-window');
 
-require('crash-reporter').start();
+//require('crash-reporter').start({companyName:"ch.evanlyn"});
 
 var mainWindow = null;
 
@@ -18,7 +18,7 @@ app.on('ready', function (){
       return process.env.HOME || process.env.USERPROFILE;
     }
 
-    mainWindow.loadUrl('file://' + __dirname + '/index.html#' + getUserHome());
+    mainWindow.loadURL('file://' + __dirname + '/index.html#' + getUserHome());
 
     mainWindow.on('closed', function (){
         mainWindow = null;

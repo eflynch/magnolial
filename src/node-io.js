@@ -3,7 +3,7 @@ var _ = require('underscore');
 var ajax = require('./ajax');
 
 var userfolder = window.location.hash.slice(1);
-var preferencesFile = '~/.magnolial/magnolia.prefs';
+var preferencesFile = '~/.magnolial/magnolial.prefs';
 var configFile = '~/.magnolial/magnolial.rc';
 
 
