@@ -7,7 +7,6 @@ var preferencesFile = '~/.magnolial/magnolia.prefs';
 var configFile = '~/.magnolial/magnolial.rc';
 
 
-
 var writeToFile = function (filename, obj){
     if (filename[0] === '~'){
         filename = userfolder + filename.slice(1);
@@ -107,8 +106,8 @@ var getPrefs = function(){
 }
 
 var updatePrefs = function(preferences){
-    if (!fs.existsSync("~/.magnolial){
-        fs.mkdirSync("~/.magnolial);
+    if (!fs.existsSync(userfolder + "/.magnolial")){
+        fs.mkdirSync(userfolder + "/.magnolial");
     }
 
     var oldPreferences = getPrefs();

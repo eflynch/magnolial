@@ -148,7 +148,11 @@ var Magnolial = React.createClass({
                     this.t.indentItem(child);
                 }
             } else {
-                this.setFocus(this.t.succOf(child));
+                if (this.state.headSerial === child._serial){
+                    this.setFocus(child.childs[0]);
+                } else {
+                    this.setFocus(this.t.succOf(child));
+                }
             }
         }
     },
@@ -168,7 +172,11 @@ var Magnolial = React.createClass({
                     this.t.indentItem(child);
                 }
             } else {
-                this.setFocus(this.t.succOf(child));
+                if (this.state.headSerial === child._serial){
+                    this.setFocus(child.childs[0]);
+                } else {
+                    this.setFocus(this.t.succOf(child));
+                }
             }
         }
         if (e.keyCode === 75){ // k
@@ -239,7 +247,7 @@ var Magnolial = React.createClass({
                 return;
             }
             this.setHead(this.t.parentOf(head));
-            this.setFocus(this.t.parentOf(head));
+            this.setFocus(head);
         }
     },
     keyDownVimInput: function (e, child){
@@ -277,7 +285,7 @@ var Magnolial = React.createClass({
     // Focus Relevant (internal state)
     setHead: function (child){
         this.props.onUpdate(this.state.trunk, child._serial, this.state.focusSerial);
-        this.t.setCollapsed(child, false);
+        // this.t.setCollapsed(child, false);
         this.setState({
             headSerial: child._serial
         });

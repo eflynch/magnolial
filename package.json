@@ -4,6 +4,8 @@
   "description": "Workflowy-inspired self-hosted nested list webapp",
   "main": "dist/magnolial.js",
   "scripts": {
+    "build": "cp -r ./app ./build/Magnolial.app/Contents/Resources/",
+    "install": "cp -r ./build/Magnolial.app /Applications/Magnolial.app",
     "prepublish": "jsx ./src ./dist"
   },
   "repository": {
