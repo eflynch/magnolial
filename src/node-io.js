@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var ReadWriteLock = require('rwlock');
 
 var ajax = require('./ajax');
 
@@ -6,34 +7,42 @@ var userfolder = window.location.hash.slice(1);
 var preferencesFile = '~/.magnolial/magnolial.prefs';
 var configFile = '~/.magnolial/magnolial.rc';
 
+var lock = new ReadWriteLock();
+
 
 var writeToFile = function (filename, obj){
-    if (filename[0] === '~'){
-        filename = userfolder + filename.slice(1);
-    }
-    fs.writeFile(filename, JSON.stringify(obj)); 
+    lock.writeLock(function (release){
+        if (filename[0] === '~'){
+            filename = userfolder + filename.slice(1);
+        }
+        fs.writeFileSync(filename, JSON.stringify(obj)); 
+        release();
+    });    
 }
 
-var readFromFile = function (filename){
-    if (filename[0] === '~'){
-        filename = userfolder + filename.slice(1);
-    }
-    return JSON.parse(fs.readFileSync(filename, 'utf8'));
+var readFromFile = function (filename, onSuccess, onFailure){
+    lock.readLock(function (release){
+        if (filename[0] === '~'){
+            filename = userfolder + filename.slice(1);
+        }
+        try {
+            var returnObj = JSON.parse(fs.readFileSync(filename, 'utf8'));
+        } catch (e){
+            if (e.code != 'ENOENT'){throw e;}
+            var error = {
+                nodeError: e,
+                status: 404
+            }
+            release();
+            return onFailure(error); 
+        }
+        release();
+        onSuccess(returnObj);
+    });    
 }
 
 var fileGet = function(filename, onSuccess, onFailure){
-    try {
-        var file = readFromFile(filename);
-    } catch (e){
-        if (e.code != 'ENOENT'){throw e;}
-        var error = {
-            nodeError: e,
-            status: 404
-        }
-        return onFailure(error); 
-    }
-
-    return onSuccess(file);
+    readFromFile(filename, onSuccess, onFailure);
 }
 
 var get = function(filename, onSuccess, onFailure){
@@ -90,19 +99,22 @@ var post = function(filename, obj, onSuccess, onFailure){
     }
 }
 
-var getPrefs = function(){
-    try {
-        var preferences = readFromFile(preferencesFile);
-    } catch (e){
-        if (e.code != 'ENOENT'){throw e;}
+var getPrefs = function(callback){
+    var onSuccess = function (preferences){
+        if (preferences === undefined){
+            preferences = {lastReadA: "~/Desktop/untitled.mgl", lastReadB: ""};
+            writeToFile(preferencesFile, preferences);
+        }
+        callback(preferences);
+    }
+
+    var onFailure = function (error){
         var preferences = {lastReadA: "~/Desktop/untitled.mgl", lastReadB: ""};
         writeToFile(preferencesFile, preferences);
+        callback(preferences);
     }
-    if (preferences === undefined){
-        preferences = {lastReadA: "~/Desktop/untitled.mgl", lastReadB: ""};
-        writeToFile(preferencesFile, preferences);
-    }
-    return preferences;
+
+    readFromFile(preferencesFile, onSuccess, onFailure);
 }
 
 var updatePrefs = function(preferences){
@@ -110,24 +122,29 @@ var updatePrefs = function(preferences){
         fs.mkdirSync(userfolder + "/.magnolial");
     }
 
-    var oldPreferences = getPrefs();
-    _.extend(oldPreferences, preferences);
-    writeToFile(preferencesFile, oldPreferences);
+   getPrefs(function(oldPrefs){
+        _.extend(oldPrefs, preferences);
+        writeToFile(preferencesFile, oldPrefs);
+    });
+    
 }
 
-var getConfig = function(){
-    try {
-        var config = readFromFile(configFile);
-    } catch (e){
-        if (e.code != 'ENOENT'){throw e;}
+var getConfig = function(callback){
+    var onSuccess = function(config){
+        if (config === undefined){
+            var config = {useVim: true};
+            writeToFile(configFile, config);
+        }
+        callback(config);
+    }
+
+    var onFailure = function (error){
         var config = {useVim: true};
         writeToFile(configFile, config);
+        callback(config);
     }
-    if (config === undefined){
-        var config = {useVim: true};
-        writeToFile(configFile, config);
-    }
-    return config;
+
+    readFromFile(configFile, onSuccess, onFailure);
 }
 
 var writeConfig = function(config){

@@ -18,7 +18,7 @@ app.on('ready', function (){
       return process.env.HOME || process.env.USERPROFILE;
     }
 
-    mainWindow.loadURL('file://' + __dirname + '/index.html#' + getUserHome());
+    mainWindow.loadUrl('file://' + __dirname + '/index.html#' + getUserHome());
 
     mainWindow.on('closed', function (){
         mainWindow = null;

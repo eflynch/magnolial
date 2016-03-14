@@ -6,7 +6,7 @@ class ImmutableTree {
         this.redos = [];
         this.trunk = trunk;
         this.node_hash = ImmutableTree.formatTrunk(trunk);
-        this.onMutate = onMutate || function (){};
+        this.onMutate = onMutate || function (newTrunk){};
     }
 
     static makeEmptyTrunk(){
@@ -226,6 +226,7 @@ class ImmutableTree {
     }
 
     setValue(child, value){
+        if (child.value === value){return;}
         var hash = this.generateHash(child);
         hash.target.value = {$set: value};
         this.applyHash(hash);

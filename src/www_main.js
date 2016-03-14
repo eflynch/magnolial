@@ -38,6 +38,8 @@ var FileName = React.createClass({
         return {
             aFilename: "",
             bFilename: "",
+            savingA: false,
+            savingB: false,
             showError: false,
             autoSaveA: false,
             autoSaveB: false
@@ -45,14 +47,30 @@ var FileName = React.createClass({
         }
     },
     componentWillMount: function (){
-        var prefs = IO.getPrefs();
+        IO.getPrefs(function(prefs){
+            this.setState({
+                aFilename: prefs.lastReadA,
+                bFilename: prefs.lastReadB
+            });
+            this.doRead(prefs.lastReadA);
+            this.setState({autoSaveA: true, autoSaveB: false});
+        }.bind(this));
 
-        this.setState({
-            aFilename: prefs.lastReadA,
-            bFilename: prefs.lastReadB
-        });
-        this.doRead(prefs.lastReadA);
-        this.setState({autoSaveA: true, autoSaveB: false});
+        this.saveA = _.throttle(function(timestamp, filename, trunk){
+            IO.patch(filename, {
+                trunk: trunk,
+                timestamp: timestamp
+            }, function(){this.setState({savingA: false});}.bind(this),
+               function(){this.setState({savingA: false});}.bind(this)); 
+        }.bind(this), 1000, {leading: false});
+
+        this.saveB = _.throttle(function(timestamp, filename, trunk){
+            IO.patch(filename, {
+                trunk: trunk,
+                timestamp: timestamp
+            }, function(){this.setState({savingB: false});}.bind(this),
+               function(){this.setState({savingB: false});}.bind(this)); 
+        }.bind(this), 1000, {leading: false});
     },
     handleAChange: function (e){
         this.setState({aFilename: e.target.value});
@@ -78,6 +96,7 @@ var FileName = React.createClass({
 
         var onSuccess = function(file){
             if (!validateFile(file)){
+                this.setState({showError: true, errorMsg: "File invalid"});
                 return;
             }
             renderMagnolial(file.trunk, this.onChange, this.onBlur);
@@ -97,25 +116,23 @@ var FileName = React.createClass({
             IO.get(filename, onSuccess, onFailure);
         }.bind(this), 5000)();
     },
+
     onChange: function(trunk, headSerial){
         var timestamp = Date.now();
         if (this.state.autoSaveA){
             if (!validateFilename(this.state.aFilename)){
                 return;
             }
-            IO.patch(this.state.aFilename, {
-                trunk: trunk,
-                timestamp: timestamp
-            }); 
+            this.setState({savingA: true});
+            this.saveA(timestamp, this.state.aFilename, trunk);
         }
+
         if (this.state.autoSaveB){
             if (!validateFilename(this.state.bFilename)){
                 return;
             }
-            IO.patch(this.state.bFilename, {
-                trunk: trunk,
-                timestamp: timestamp
-            }); 
+            this.setState({savingB: true});
+            this.saveB(timestamp, this.state.bFilename, trunk);
         }
     },
     onBlur: function (e){
@@ -164,7 +181,7 @@ var FileName = React.createClass({
         }
         return (
             <div>
-                <div className="MAGNOLIAL_error" style={{display: this.state.showError ? 'none' : 'block'}}>{this.state.errorMsg}</div>
+                <div className="MAGNOLIAL_error" style={{display: this.state.showError ? 'block' : 'none'}}>{this.state.errorMsg}</div>
                 <input ref="a"
                        className={this.state.autoSaveA ? "MAGNOLIAL_autosave" : ""}
                        type="text"
@@ -172,6 +189,9 @@ var FileName = React.createClass({
                        onChange={this.handleAChange}
                        onKeyDown={this.handleAKeyDown}
                        onFocus={this.handleAFocus}/>
+                <span style={{width: 0, position:"relative", display: this.state.savingA ? 'inline' :'none'}}>
+                    <FontAwesome name='refresh' spin style={{position:"absolute", left:-20, top:0}}/>
+                </span>
                 <button className="MAGNOLIAL_seperator" onClick={this.handleClick}>{symbol}</button>
                 <input ref="b"
                        className={this.state.autoSaveB ? "MAGNOLIAL_autosave" : ""}
@@ -180,6 +200,9 @@ var FileName = React.createClass({
                        onChange={this.handleBChange}
                        onKeyDown={this.handleBKeyDown}
                        onFocus={this.handleBFocus}/>
+                <span style={{width: 0, position:"relative", display: this.state.savingB ? 'inline' :'none'}}>
+                    <FontAwesome name='refresh' spin style={{position:"absolute", left:-20, top:0}}/>
+                </span>
             </div>
         );
     }

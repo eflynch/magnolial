@@ -35185,6 +35185,12 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":273}],407:[function(require,module,exports){
+/*! ReadWriteLock - v5.0.0 - 2015-01-16
+ * Author: Alberto La Rocca <a71104@gmail.com> (https://github.com/71104)
+ * Released under the MIT license
+ * Copyright (c) 2015 Alberto La Rocca */
+module.exports=function(){"use strict";function a(){this.readers=0,this.queue=[]}function b(b,c,f){var g;"function"!=typeof b?(e.hasOwnProperty(b)||(e[b]=new a),g=e[b]):(f=c,c=b,g=d),f||(f={});var h=null;f.hasOwnProperty("scope")&&(h=f.scope);var i=function(){var a=!1;return function(){a||(a=!0,g.readers--,g.queue.length&&g.queue[0]())}}();if(g.readers<0||g.queue.length){var j=!1;if(g.queue.push(function(){!j&&g.readers>=0&&(j=!0,g.queue.shift(),g.readers++,c.call(h,i),g.queue.length&&g.queue[0]())}),f.hasOwnProperty("timeout")){var k=null;f.hasOwnProperty("timeoutCallback")&&(k=f.timeoutCallback),setTimeout(function(){j||(j=!0,g.queue.shift(),k&&k.call(f.scope))},f.timeout)}}else g.readers++,c.call(f.scope,i)}function c(b,c,f){var g;"function"!=typeof b?(e.hasOwnProperty(b)||(e[b]=new a),g=e[b]):(f=c,c=b,g=d),f||(f={});var h=null;f.hasOwnProperty("scope")&&(h=f.scope);var i=function(){var a=!1;return function(){a||(a=!0,g.readers=0,g.queue.length&&g.queue[0]())}}();if(g.readers||g.queue.length){var j=!1;if(g.queue.push(function(){j||g.readers||(j=!0,g.queue.shift(),g.readers=-1,c.call(f.scope,i))}),f.hasOwnProperty("timeout")){var k=null;f.hasOwnProperty("timeoutCallback")&&(k=f.timeoutCallback),setTimeout(function(){j||(j=!0,g.queue.shift(),k&&k.call(h))},f.timeout)}}else g.readers=-1,c.call(f.scope,i)}var d=new a,e={};this.readLock=b,this.writeLock=c,this.async={readLock:function(a,c,d){"function"!=typeof a?b(a,function(a){c.call(this,null,a)},d):(c=a,d=c,b(function(a){c.call(this,null,a)},d))},writeLock:function(a,b,d){"function"!=typeof a?c(a,function(a){b.call(this,null,a)},d):(b=a,d=b,c(function(a){b.call(this,null,a)},d))}}};
+},{}],408:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -36734,7 +36740,7 @@ module.exports = require('./lib/React');
   }
 }.call(this));
 
-},{}],408:[function(require,module,exports){
+},{}],409:[function(require,module,exports){
 "use strict";
 
 var getJSON = function (filename) {
@@ -36766,7 +36772,7 @@ module.exports = {
     postJSON: postJSON
 };
 
-},{}],409:[function(require,module,exports){
+},{}],410:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -36828,7 +36834,7 @@ var Breadcrumbs = React.createClass({
 
 module.exports = Breadcrumbs;
 
-},{"react":406,"react-bootstrap":75}],410:[function(require,module,exports){
+},{"react":406,"react-bootstrap":75}],411:[function(require,module,exports){
 "use strict";
 
 var _ = require('underscore');
@@ -36912,50 +36918,55 @@ module.exports = {
     writeConfig: writeConfig
 };
 
-},{"./ajax":408,"underscore":407}],411:[function(require,module,exports){
+},{"./ajax":409,"underscore":408}],412:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
 
 var ContentEditable = React.createClass({
-  displayName: 'ContentEditable',
+    displayName: 'ContentEditable',
 
-  render: function () {
-    return React.createElement(this.props.tagName || 'div', Object.assign({}, this.props, {
-      ref: function (e) {
-        this.htmlEl = e;
-      }.bind(this),
-      onInput: this.emitChange,
-      onBlur: this.emitChange,
-      contentEditable: !this.props.disabled,
-      dangerouslySetInnerHTML: { __html: this.props.html }
-    }), this.props.children);
-  },
+    getInitialState: function () {
+        return {
+            lastHTML: null
+        };
+    },
+    render: function () {
+        return React.createElement(this.props.tagName || 'div', Object.assign({}, this.props, {
+            ref: function (e) {
+                this.htmlEl = e;
+            }.bind(this),
+            onInput: this.emitChange,
+            onBlur: this.emitChange,
+            contentEditable: !this.props.disabled,
+            dangerouslySetInnerHTML: { __html: this.props.html }
+        }), this.props.children);
+    },
 
-  shouldComponentUpdate: function (nextProps) {
-    return !this.htmlEl || nextProps.html !== this.htmlEl.innerHTML || this.props.disabled !== nextProps.disabled || this.props.className !== nextProps.className;
-  },
+    shouldComponentUpdate: function (nextProps) {
+        return !this.htmlEl || nextProps.html !== this.htmlEl.innerHTML || this.props.disabled !== nextProps.disabled || this.props.className !== nextProps.className;
+    },
 
-  componentDidUpdate: function () {
-    if (this.htmlEl && this.props.html !== this.htmlEl.innerHTML) {
-      this.htmlEl.innerHTML = this.props.html;
+    componentDidUpdate: function () {
+        if (this.htmlEl && this.props.html !== this.htmlEl.innerHTML) {
+            this.htmlEl.innerHTML = this.props.html;
+        }
+    },
+
+    emitChange: function (evt) {
+        if (!this.htmlEl) return;
+        var html = this.htmlEl.innerHTML;
+        if (this.props.onChange && html !== this.state.lastHTML && this.state.lastHTML !== null) {
+            evt.target = { value: html };
+            this.props.onChange(evt);
+        }
+        this.setState({ lastHTML: html });
     }
-  },
-
-  emitChange: function (evt) {
-    if (!this.htmlEl) return;
-    var html = this.htmlEl.innerHTML;
-    if (this.props.onChange && html !== this.lastHtml) {
-      evt.target = { value: html };
-      this.props.onChange(evt);
-    }
-    this.lastHtml = html;
-  }
 });
 
 module.exports = ContentEditable;
 
-},{"react":406}],412:[function(require,module,exports){
+},{"react":406}],413:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -36993,7 +37004,7 @@ var Decoration = React.createClass({
 
 module.exports = Decoration;
 
-},{"react":406,"react-dom":248,"react-fontawesome":249}],413:[function(require,module,exports){
+},{"react":406,"react-dom":248,"react-fontawesome":249}],414:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -37065,7 +37076,7 @@ var FocusTitle = React.createClass({
 
 module.exports = FocusTitle;
 
-},{"./contenteditable":411,"react":406,"react-bootstrap":75,"react-dom":248}],414:[function(require,module,exports){
+},{"./contenteditable":412,"react":406,"react-bootstrap":75,"react-dom":248}],415:[function(require,module,exports){
 "use strict";
 
 var update = require('react-addons-update');
@@ -37076,7 +37087,7 @@ class ImmutableTree {
         this.redos = [];
         this.trunk = trunk;
         this.node_hash = ImmutableTree.formatTrunk(trunk);
-        this.onMutate = onMutate || function () {};
+        this.onMutate = onMutate || function (newTrunk) {};
     }
 
     static makeEmptyTrunk() {
@@ -37296,6 +37307,9 @@ class ImmutableTree {
     }
 
     setValue(child, value) {
+        if (child.value === value) {
+            return;
+        }
         var hash = this.generateHash(child);
         hash.target.value = { $set: value };
         this.applyHash(hash);
@@ -37446,7 +37460,7 @@ class ImmutableTree {
 
 module.exports = ImmutableTree;
 
-},{"react-addons-update":3}],415:[function(require,module,exports){
+},{"react-addons-update":3}],416:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -37555,7 +37569,7 @@ var Item = React.createClass({
 
 module.exports = Item;
 
-},{"./decoration":412,"./title":419,"react":406,"react-bootstrap":75,"react-dom":248}],416:[function(require,module,exports){
+},{"./decoration":413,"./title":420,"react":406,"react-bootstrap":75,"react-dom":248}],417:[function(require,module,exports){
 "use strict";
 
 var _ = require('underscore');
@@ -37567,7 +37581,7 @@ if (isNode) {
     module.exports = require('./browser-io');
 }
 
-},{"./browser-io":410,"./node-io":418,"detect-node":2,"underscore":407}],417:[function(require,module,exports){
+},{"./browser-io":411,"./node-io":419,"detect-node":2,"underscore":408}],418:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -37968,10 +37982,11 @@ var Magnolial = React.createClass({
 
 module.exports = Magnolial;
 
-},{"./breadcrumbs":409,"./focus-title":413,"./immutable-tree":414,"./item":415,"react":406,"react-bootstrap":75}],418:[function(require,module,exports){
+},{"./breadcrumbs":410,"./focus-title":414,"./immutable-tree":415,"./item":416,"react":406,"react-bootstrap":75}],419:[function(require,module,exports){
 "use strict";
 
 var _ = require('underscore');
+var ReadWriteLock = require('rwlock');
 
 var ajax = require('./ajax');
 
@@ -37979,35 +37994,43 @@ var userfolder = window.location.hash.slice(1);
 var preferencesFile = '~/.magnolial/magnolial.prefs';
 var configFile = '~/.magnolial/magnolial.rc';
 
+var lock = new ReadWriteLock();
+
 var writeToFile = function (filename, obj) {
-    if (filename[0] === '~') {
-        filename = userfolder + filename.slice(1);
-    }
-    fs.writeFile(filename, JSON.stringify(obj));
+    lock.writeLock(function (release) {
+        if (filename[0] === '~') {
+            filename = userfolder + filename.slice(1);
+        }
+        fs.writeFileSync(filename, JSON.stringify(obj));
+        release();
+    });
 };
 
-var readFromFile = function (filename) {
-    if (filename[0] === '~') {
-        filename = userfolder + filename.slice(1);
-    }
-    return JSON.parse(fs.readFileSync(filename, 'utf8'));
+var readFromFile = function (filename, onSuccess, onFailure) {
+    lock.readLock(function (release) {
+        if (filename[0] === '~') {
+            filename = userfolder + filename.slice(1);
+        }
+        try {
+            var returnObj = JSON.parse(fs.readFileSync(filename, 'utf8'));
+        } catch (e) {
+            if (e.code != 'ENOENT') {
+                throw e;
+            }
+            var error = {
+                nodeError: e,
+                status: 404
+            };
+            release();
+            return onFailure(error);
+        }
+        release();
+        onSuccess(returnObj);
+    });
 };
 
 var fileGet = function (filename, onSuccess, onFailure) {
-    try {
-        var file = readFromFile(filename);
-    } catch (e) {
-        if (e.code != 'ENOENT') {
-            throw e;
-        }
-        var error = {
-            nodeError: e,
-            status: 404
-        };
-        return onFailure(error);
-    }
-
-    return onSuccess(file);
+    readFromFile(filename, onSuccess, onFailure);
 };
 
 var get = function (filename, onSuccess, onFailure) {
@@ -38070,21 +38093,22 @@ var post = function (filename, obj, onSuccess, onFailure) {
     }
 };
 
-var getPrefs = function () {
-    try {
-        var preferences = readFromFile(preferencesFile);
-    } catch (e) {
-        if (e.code != 'ENOENT') {
-            throw e;
+var getPrefs = function (callback) {
+    var onSuccess = function (preferences) {
+        if (preferences === undefined) {
+            preferences = { lastReadA: "~/Desktop/untitled.mgl", lastReadB: "" };
+            writeToFile(preferencesFile, preferences);
         }
+        callback(preferences);
+    };
+
+    var onFailure = function (error) {
         var preferences = { lastReadA: "~/Desktop/untitled.mgl", lastReadB: "" };
         writeToFile(preferencesFile, preferences);
-    }
-    if (preferences === undefined) {
-        preferences = { lastReadA: "~/Desktop/untitled.mgl", lastReadB: "" };
-        writeToFile(preferencesFile, preferences);
-    }
-    return preferences;
+        callback(preferences);
+    };
+
+    readFromFile(preferencesFile, onSuccess, onFailure);
 };
 
 var updatePrefs = function (preferences) {
@@ -38092,26 +38116,28 @@ var updatePrefs = function (preferences) {
         fs.mkdirSync(userfolder + "/.magnolial");
     }
 
-    var oldPreferences = getPrefs();
-    _.extend(oldPreferences, preferences);
-    writeToFile(preferencesFile, oldPreferences);
+    getPrefs(function (oldPrefs) {
+        _.extend(oldPrefs, preferences);
+        writeToFile(preferencesFile, oldPrefs);
+    });
 };
 
-var getConfig = function () {
-    try {
-        var config = readFromFile(configFile);
-    } catch (e) {
-        if (e.code != 'ENOENT') {
-            throw e;
+var getConfig = function (callback) {
+    var onSuccess = function (config) {
+        if (config === undefined) {
+            var config = { useVim: true };
+            writeToFile(configFile, config);
         }
+        callback(config);
+    };
+
+    var onFailure = function (error) {
         var config = { useVim: true };
         writeToFile(configFile, config);
-    }
-    if (config === undefined) {
-        var config = { useVim: true };
-        writeToFile(configFile, config);
-    }
-    return config;
+        callback(config);
+    };
+
+    readFromFile(configFile, onSuccess, onFailure);
 };
 
 var writeConfig = function (config) {
@@ -38146,7 +38172,7 @@ module.exports = {
     writeConfig: writeConfig
 };
 
-},{"./ajax":408,"underscore":407}],419:[function(require,module,exports){
+},{"./ajax":409,"rwlock":407,"underscore":408}],420:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -38233,7 +38259,7 @@ var Title = React.createClass({
 
 module.exports = Title;
 
-},{"./contenteditable":411,"react":406,"react-dom":248}],420:[function(require,module,exports){
+},{"./contenteditable":412,"react":406,"react-dom":248}],421:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -38277,6 +38303,8 @@ var FileName = React.createClass({
         return {
             aFilename: "",
             bFilename: "",
+            savingA: false,
+            savingB: false,
             showError: false,
             autoSaveA: false,
             autoSaveB: false
@@ -38284,14 +38312,36 @@ var FileName = React.createClass({
         };
     },
     componentWillMount: function () {
-        var prefs = IO.getPrefs();
+        IO.getPrefs(function (prefs) {
+            this.setState({
+                aFilename: prefs.lastReadA,
+                bFilename: prefs.lastReadB
+            });
+            this.doRead(prefs.lastReadA);
+            this.setState({ autoSaveA: true, autoSaveB: false });
+        }.bind(this));
 
-        this.setState({
-            aFilename: prefs.lastReadA,
-            bFilename: prefs.lastReadB
-        });
-        this.doRead(prefs.lastReadA);
-        this.setState({ autoSaveA: true, autoSaveB: false });
+        this.saveA = _.throttle(function (timestamp, filename, trunk) {
+            IO.patch(filename, {
+                trunk: trunk,
+                timestamp: timestamp
+            }, function () {
+                this.setState({ savingA: false });
+            }.bind(this), function () {
+                this.setState({ savingA: false });
+            }.bind(this));
+        }.bind(this), 1000, { leading: false });
+
+        this.saveB = _.throttle(function (timestamp, filename, trunk) {
+            IO.patch(filename, {
+                trunk: trunk,
+                timestamp: timestamp
+            }, function () {
+                this.setState({ savingB: false });
+            }.bind(this), function () {
+                this.setState({ savingB: false });
+            }.bind(this));
+        }.bind(this), 1000, { leading: false });
     },
     handleAChange: function (e) {
         this.setState({ aFilename: e.target.value });
@@ -38317,6 +38367,7 @@ var FileName = React.createClass({
 
         var onSuccess = function (file) {
             if (!validateFile(file)) {
+                this.setState({ showError: true, errorMsg: "File invalid" });
                 return;
             }
             renderMagnolial(file.trunk, this.onChange, this.onBlur);
@@ -38336,25 +38387,23 @@ var FileName = React.createClass({
             IO.get(filename, onSuccess, onFailure);
         }.bind(this), 5000)();
     },
+
     onChange: function (trunk, headSerial) {
         var timestamp = Date.now();
         if (this.state.autoSaveA) {
             if (!validateFilename(this.state.aFilename)) {
                 return;
             }
-            IO.patch(this.state.aFilename, {
-                trunk: trunk,
-                timestamp: timestamp
-            });
+            this.setState({ savingA: true });
+            this.saveA(timestamp, this.state.aFilename, trunk);
         }
+
         if (this.state.autoSaveB) {
             if (!validateFilename(this.state.bFilename)) {
                 return;
             }
-            IO.patch(this.state.bFilename, {
-                trunk: trunk,
-                timestamp: timestamp
-            });
+            this.setState({ savingB: true });
+            this.saveB(timestamp, this.state.bFilename, trunk);
         }
     },
     onBlur: function (e) {
@@ -38408,7 +38457,7 @@ var FileName = React.createClass({
             null,
             React.createElement(
                 'div',
-                { className: 'MAGNOLIAL_error', style: { display: this.state.showError ? 'none' : 'block' } },
+                { className: 'MAGNOLIAL_error', style: { display: this.state.showError ? 'block' : 'none' } },
                 this.state.errorMsg
             ),
             React.createElement('input', { ref: 'a',
@@ -38418,6 +38467,11 @@ var FileName = React.createClass({
                 onChange: this.handleAChange,
                 onKeyDown: this.handleAKeyDown,
                 onFocus: this.handleAFocus }),
+            React.createElement(
+                'span',
+                { style: { width: 0, position: "relative", display: this.state.savingA ? 'inline' : 'none' } },
+                React.createElement(FontAwesome, { name: 'refresh', spin: true, style: { position: "absolute", left: -20, top: 0 } })
+            ),
             React.createElement(
                 'button',
                 { className: 'MAGNOLIAL_seperator', onClick: this.handleClick },
@@ -38429,7 +38483,12 @@ var FileName = React.createClass({
                 value: this.state.bFilename,
                 onChange: this.handleBChange,
                 onKeyDown: this.handleBKeyDown,
-                onFocus: this.handleBFocus })
+                onFocus: this.handleBFocus }),
+            React.createElement(
+                'span',
+                { style: { width: 0, position: "relative", display: this.state.savingB ? 'inline' : 'none' } },
+                React.createElement(FontAwesome, { name: 'refresh', spin: true, style: { position: "absolute", left: -20, top: 0 } })
+            )
         );
     }
 });
@@ -38439,4 +38498,4 @@ document.addEventListener("DOMContentLoaded", function () {
     ReactDOM.render(React.createElement(FileName, null), filepath);
 });
 
-},{"./immutable-tree":414,"./magnolial":417,"./magnolial-io":416,"react":406,"react-dom":248,"react-fontawesome":249,"underscore":407}]},{},[420]);
+},{"./immutable-tree":415,"./magnolial":418,"./magnolial-io":417,"react":406,"react-dom":248,"react-fontawesome":249,"underscore":408}]},{},[421]);

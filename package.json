@@ -31,6 +31,7 @@
     "react-bootstrap": "^0.28.2",
     "react-dom": "^0.14.6",
     "react-fontawesome": "^0.3.3",
+    "rwlock": "^5.0.0",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
