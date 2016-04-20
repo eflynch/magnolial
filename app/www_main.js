@@ -36956,7 +36956,7 @@ var ContentEditable = React.createClass({
     emitChange: function (evt) {
         if (!this.htmlEl) return;
         var html = this.htmlEl.innerHTML;
-        if (this.props.onChange && html !== this.state.lastHTML && this.state.lastHTML !== null) {
+        if (this.props.onChange && html !== this.state.lastHTMLl) {
             evt.target = { value: html };
             this.props.onChange(evt);
         }
