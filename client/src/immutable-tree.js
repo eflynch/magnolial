@@ -1,28 +1,30 @@
-var update = require('react-addons-update');
+import update from 'react-addons-update';
 
 class ImmutableTree {
-    constructor(trunk, onMutate){
+    constructor(trunk, onMutate, baseValue){
         this.undos = [trunk];
         this.redos = [];
         this.trunk = trunk;
         this.node_hash = ImmutableTree.formatTrunk(trunk);
         this.onMutate = onMutate || function (newTrunk){};
+        this.createBaseValue = function (){
+            var bV = baseValue || {};
+            return JSON.parse(JSON.stringify(bV));
+        };
     }
 
     static makeEmptyTrunk(){
         return {
-            childs: [{childs:[], collapsed: false, completed: false, value:""}],
-            value: "",
-            collapsed: false,
-            completed: false
+            childs: [{childs:[], collapsed: false, value: undefined}],
+            value: undefined,
+            collapsed: false
         }
     }
 
     static makeChild(parentSerial){
         return {
-            value: '',
+            value: undefined,
             collapsed: false,
-            completed: false,
             _serial: ImmutableTree.makeSerial(),
             _parent: parentSerial,
             childs: []
@@ -48,7 +50,7 @@ class ImmutableTree {
         var node_hash = {};
         var formatChild = function (child, _parent){
             if (child.value === undefined){
-                child.value = "";
+                child.value = this.createBaseValue();
             }
             if (child.childs === undefined){
                 child.childs = [];
@@ -56,12 +58,11 @@ class ImmutableTree {
             if (child.collapsed === undefined){
                 child.collapsed = false;
             }
-            if (child.completed === undefined){
-                child.completed = false;
-            }
 
             child._parent = _parent;
-            child._serial = ImmutableTree.makeSerial();
+            if (child._serial === undefined){
+                child._serial = ImmutableTree.makeSerial();
+            }
             node_hash[child._serial] = child;
             for (var i=0; i < child.childs.length; i++){
                 formatChild(child.childs[i], child._serial);
@@ -219,18 +220,16 @@ class ImmutableTree {
         this.applyHash(hash);
     }
 
-    setCompleted(child, state){
-        var hash = this.generateHash(child);
-        hash.target.completed = {$set: state};
-        this.applyHash(hash);
-    }
-
     setValue(child, value){
         if (child.value === value){return;}
         var hash = this.generateHash(child);
+        if (value.title !== undefined && value.title === "<br>"){
+            value.title = "";
+        }
         hash.target.value = {$set: value};
         this.applyHash(hash);
     }
+
 
     newItemBelow(child){
         // Ignore if Trunk
@@ -240,6 +239,7 @@ class ImmutableTree {
 
         var childIdx = this.indexOf(child);
         var newItem = ImmutableTree.makeChild(child._parent);
+        newItem.value = this.createBaseValue();
         this.node_hash[newItem._serial] = newItem;
         var hash = this.generateHash(this.parentOf(child));
         hash.target.childs = {$splice: [[childIdx + 1, 0, newItem]]};
@@ -255,6 +255,7 @@ class ImmutableTree {
 
         var childIdx = this.indexOf(child);
         var newItem = ImmutableTree.makeChild(child._parent);
+        newItem.value = this.createBaseValue();
         this.node_hash[newItem._serial] = newItem;
         var hash = this.generateHash(this.parentOf(child));
         hash.target.childs = {$splice: [[childIdx, 0, newItem]]};

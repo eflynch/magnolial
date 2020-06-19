@@ -1,6 +1,4 @@
-var React = require('react');
-var rb = require('react-bootstrap');
-
+import React from 'react';
 
 var strip = function(html)
 {
@@ -9,23 +7,16 @@ var strip = function(html)
    return tmp.textContent || tmp.innerText || "";
 }
 
-var Breadcrumbs = React.createClass({
-    shouldComponentUpdate: function(nextProps, nextState){
-        if (this.props === nextProps){
-            return false;
-        }
-        return true;
-    },
-    render: function (){
+class Breadcrumbs extends React.PureComponent {
+    render (){
         var breadcrumbs = this.props.ancestors.map(function(parent){
             var onClick = function (e){
                 this.props.setHead(parent);
-                this.props.setFocus(parent);
             }.bind(this);
-            if (!parent.value){
+            if (!parent.value.title){
                 var text = '...';
             } else {
-                var strippedValue = strip(parent.value);
+                var strippedValue = strip(parent.value.title);
                 if (strippedValue.length > 20){
                     var text = strippedValue.substring(0, 20) + '...';
                 } else {
@@ -34,19 +25,19 @@ var Breadcrumbs = React.createClass({
             }
             return (
                 <span key={parent._serial}>
-                    <span className="MAGNOLIAL_breadcrumb" onClick={onClick}>
+                    <span className="breadcrumb-text" onClick={onClick}>
                         {text}
                     </span>
-                    <span className="MAGNOLIAL_breadcrumb_sym">‣</span>
+                    <span className="breadcrumb-sym">‣</span>
                 </span>
             );
         }.bind(this));
         return (
-            <h2>
+            <div className="breadcrumb-wrapper">
                 {breadcrumbs}
-            </h2>
+            </div>
         );
     }   
-});
+}
 
 module.exports = Breadcrumbs;

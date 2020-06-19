@@ -1,12 +1,17 @@
-var React = require('react');
-var ReactDOM = require('react-dom');
+import React from 'react';
+import Title from './title';
+import Decoration from './decoration';
+
 var rb = require('react-bootstrap');
 
-var Title = require('./title');
-var Decoration = require('./decoration');
-
-var Item = React.createClass({
-    shouldComponentUpdate: function (nextProps, nextState){
+class Item extends React.Component {
+    constructor(props){
+        super(props);
+        this.genChildren = this.genChildren.bind(this);
+        this.toggleCollapsed = this.toggleCollapsed.bind(this);
+        this.onFocus = this.onFocus.bind(this);
+    }
+    shouldComponentUpdate(nextProps, nextState){
         if (this.props.trunk !== nextProps.trunk){
             return true;
         }
@@ -30,8 +35,9 @@ var Item = React.createClass({
             } 
         }
         return false;
-    },
-    genChildren: function(){
+    }
+
+    genChildren(){
         if (this.props.trunk.childs === undefined){
             return [];
         }
@@ -46,39 +52,44 @@ var Item = React.createClass({
                          focusAncestors={this.props.focusAncestors}
                          setHead={this.props.setHead}
                          setFocus={this.props.setFocus}
-                         keyDownHandler={this.props.keyDownHandler}
                          setCollapsed={this.props.setCollapsed}
                          entryEnabled={this.props.entryEnabled}
-                         setValue={this.props.setValue}/>;
+                         setTitle={this.props.setTitle}/>;
         }.bind(this));
-    },
-    toggleCollapsed: function (){
+    }
+
+    toggleCollapsed(){
         this.props.setCollapsed(this.props.trunk, !this.props.trunk.collapsed);
-    },
-    setHead: function (){
-        this.props.setHead(this.props.trunk);
-    },
-    onFocus: function (){
+    }
+
+    onFocus(){
         this.props.setFocus(this.props.trunk);
-    },
-    onKeyDown: function (e){
-        this.props.keyDownHandler(e, this.props.trunk);
-    },
-    render: function(){
-        return (
+    }
+
+    render(){
+        let hasContent = this.props.trunk.value.content !== null && this.props.trunk.value.content !== undefined;
+        let hasLink = this.props.trunk.value.link !== null && this.props.trunk.value.link !== undefined;
+        var listItem = (
             <li>
                 <rb.Col lg={12}>
                     <rb.Row onFocus={this.onFocus}>
-                        <Decoration collapseable={this.props.trunk.childs.length > 0} 
+                        <Decoration trunk={this.props.trunk}
+                                    collapseable={this.props.trunk.childs.length > 0} 
                                     collapsed={this.props.trunk.collapsed}
-                                    completed={this.props.trunk.completed}
                                     toggleCollapsed={this.toggleCollapsed}
-                                    setHead={this.setHead}/>
+                                    hasContent={hasContent}
+                                    hasLink={hasLink}
+                                    setHead={this.props.setHead}
+                                    setFocus={this.props.setFocus}/>
                         <Title trunk={this.props.trunk}
-                               onKeyDown={this.onKeyDown}
-                               setValue={this.props.setValue}
+                               setTitle={this.props.setTitle}
                                setFocus={this.props.setFocus}
+                               setHead={this.props.setHead}
+                               collapseable={this.props.trunk.childs.length > 0}
+                               toggleCollapsed={this.toggleCollapsed}
                                entryEnabled={this.props.entryEnabled}
+                               hasContent={hasContent}
+                               hasLink={hasLink}
                                hasFocus={this.props.hasFocus}/>
                     </rb.Row>
                     <rb.Row className="MAGNOLIAL_list">
@@ -89,7 +100,15 @@ var Item = React.createClass({
                 </rb.Col>
             </li>
         );
+
+        if (hasLink){
+            return <div className="link">{listItem}</div>;
+        } 
+        if (hasContent){
+            return <div className="iframe-link">{listItem}</div>;
+        }
+        return <div className="normal">{listItem}</div>;
     }
-});
+}
 
 module.exports = Item;

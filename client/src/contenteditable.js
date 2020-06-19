@@ -1,37 +1,40 @@
-var React = require('react');
+import React from 'react';
 
-var ContentEditable = React.createClass({
-    getInitialState: function (){
-        return {
-            lastHTML: null
-        }
-    },
-    render: function() {
+class ContentEditable extends React.Component { 
+    constructor(props){
+        super(props);
+        this.state = {lastHTML: null};
+        this.emitChange = this.emitChange.bind(this);
+    }
+
+    render() {
+        const {html, ...rest } = this.props;
         return React.createElement(
             this.props.tagName || 'div',
-            Object.assign({}, this.props, {
+            Object.assign({}, rest, {
                 ref: function(e){ this.htmlEl = e}.bind(this),
                 onInput: this.emitChange,
                 onBlur: this.emitChange,
                 contentEditable: !this.props.disabled,
-                dangerouslySetInnerHTML: {__html: this.props.html}
+                spellCheck: false,
+                dangerouslySetInnerHTML: {__html: html}
             }),
             this.props.children
         );
-    },
+    }
 
-    shouldComponentUpdate: function(nextProps) {
+    shouldComponentUpdate(nextProps) {
         return !this.htmlEl || nextProps.html !== this.htmlEl.innerHTML ||
                 this.props.disabled !== nextProps.disabled || this.props.className !== nextProps.className;
-    },
+    }
 
-    componentDidUpdate: function() {
+    componentDidUpdate() {
         if ( this.htmlEl && this.props.html !== this.htmlEl.innerHTML ) {
             this.htmlEl.innerHTML = this.props.html;
         }
-    },
+    }
 
-    emitChange: function(evt) {
+    emitChange(evt) {
         if (!this.htmlEl) return;
         var html = this.htmlEl.innerHTML;
         if (this.props.onChange && html !== this.state.lastHTMLl) {
@@ -40,7 +43,7 @@ var ContentEditable = React.createClass({
         }
         this.setState({lastHTML: html});
     }
-});
+}
 
 
 module.exports = ContentEditable;
