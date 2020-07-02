@@ -1,7 +1,7 @@
 
 import Actions from './actions';
 
-import {lookup, ancestorsOf, parentOf} from './magnolia';
+import {lookup, ancestorsOf, parentOf} from './immutable-tree';
 
 const setTitle = (child, title, dispatch) => {
     dispatch(Actions.MODIFY(

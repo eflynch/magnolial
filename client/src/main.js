@@ -9,50 +9,59 @@ import {SYNC, SYNC_FAILED, SYNC_SUCCEEDED} from './actions';
 
 import PromiseQueue from './promise-queue';
 
-import {makeEmptyTree} from './magnolia';
+import {makeEmptyTree} from './immutable-tree';
 
-
-const initialTree = makeEmptyTree(()=>{
-    return {
-        title: "",
-        link:"",
-        content: ""
+const syncEffect = (tree, dispatch) => () => {
+    const syncMagnolia = (tree) => {
+        return PromiseQueue.enqueue(() =>
+            new Promise((resolve, reject) =>{
+                setTimeout(()=>{
+                    // TODO: API CALL
+                    resolve();
+                }, 20);
+            })
+       );
     };
-});
 
-
-const syncEffect = (state, dispatch) => () => {
-    // const Sync = (state) => {
-    //     return PromiseQueue.enqueue( () =>{});
-    // };
-    // dispatch(SYNC);
-    // Sync(state).then(() => {
-    //     dispatch(SYNC_SUCCEEDED);
-    // }, () => {
-    //     dispatch(SYNC_FAILED);
-    // });
+    dispatch(SYNC());
+    syncMagnolia(tree).then(() => {
+        dispatch(SYNC_SUCCEEDED());
+    }).catch(() => {
+        dispatch(SYNC_FAILED());
+    });
 }
 
 const Main = ({initialState}) => {
     const [state, dispatch] = useReducer(rootReducer, initialState);
-    useEffect(syncEffect(state, dispatch), [state.magnolia])
+    useEffect(syncEffect(state.magnolia.tree, dispatch), [state.magnolia.tree])
 
     return (
         <MagnoliaContext.Provider value={{state, dispatch}} >
             <App />
+            {state.synchronize === 'ok' ? "√" : "..."}
         </MagnoliaContext.Provider>
     );
 };
 
-
-
-document.addEventListener("DOMContentLoaded", () => {
+const loadMagnolia = () => {
+    // TODO: API CALL
     render(<Main initialState={{
         magnolia: {
-            tree: initialTree,
-            headSerial: initialTree.trunk._serial,
-            focusSerial: initialTree.trunk._serial
+            tree: makeEmptyTree(()=>{
+                return {
+                    title: "",
+                    link:"",
+                    content: ""
+                };
+            }),
+            headSerial: null,
+            focusSerial: null
         },
         synchronize: 'ok'
     }}/>, document.getElementById('content'));
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadMagnolia();
 });

@@ -1,4 +1,4 @@
-import magnolia from './magnolia';
+import magnolia from '../immutable-tree';
 
 const synchronize = (state, action) => {
     if (action === undefined) {

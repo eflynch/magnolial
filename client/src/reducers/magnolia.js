@@ -1,7 +1,7 @@
 import update from 'immutability-helper';
-import {lookup, ancestorsOf, deleteItem} from '../magnolia';
-import {indentItem, outdentItem, makeEmptyTree, parentOf, setCollapsed, newChild} from '../magnolia';
-import {predOf, succOf, moveItemUp, moveItemDown, newItemAbove, newItemBelow, undo, redo, setValue} from '../magnolia';
+import {lookup, ancestorsOf, deleteItem} from '../immutable-tree';
+import {indentItem, outdentItem, makeEmptyTree, parentOf, setCollapsed, newChild} from '../immutable-tree';
+import {predOf, succOf, moveItemUp, moveItemDown, newItemAbove, newItemBelow, undo, redo, setValue} from '../immutable-tree';
 
 const setHead = (state, child) => {
     return update(state, {

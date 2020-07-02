@@ -7,7 +7,7 @@ import MagnoliaContext from '../context';
 import {MODIFY, SET_COLLAPSED, SET_FOCUS, SET_HEAD} from '../actions';
 import KeyDownHandler from '../keybindings';
 
-import {lookup, ancestorsOf, parentOf} from '../magnolia';
+import {lookup, ancestorsOf, parentOf} from '../immutable-tree';
 
 const Magnolia = () => {
     const [mode, setMode] = useState('vim-default');
@@ -15,14 +15,24 @@ const Magnolia = () => {
     const {magnolia, synchronize} = state;
     const {tree, headSerial, focusSerial} = magnolia;
 
+    const ensureHeadAndFocus = ()=> {
+        if (headSerial === null || headSerial === undefined) {
+            dispatch(SET_HEAD(tree.trunk));
+        }
+        if (focusSerial === null || focusSerial === undefined) {
+            dispatch(SET_FOCUS(tree.trunk));
+        }
+    };
+    useEffect(ensureHeadAndFocus, [headSerial, focusSerial]);
+    const head = headSerial ? lookup(tree, headSerial) : tree.trunk;
+    const focus = focusSerial ? lookup(tree, focusSerial) : tree.trunk;
+
     useEffect(()=>{
-        const content = lookup(tree, headSerial).value.content;
+        const content = head.value.content;
         const focusCapture = content === null || content === undefined || content === "";
         if (focusCapture && focusSerial === null) {
-            console.log("focus head");
             dispatch(SET_FOCUS(head));
         }
-        const head = lookup(tree, headSerial);
         if (!head.content && head.childs.length === 0 && parentOf(tree, head) !== undefined) {
             dispatch(SET_HEAD(parentOf(tree, head)));
             dispatch(SET_FOCUS(head));
@@ -51,9 +61,6 @@ const Magnolia = () => {
         dispatch(SET_FOCUS(child));
     };
 
-    const head = lookup(tree, headSerial);
-    const focus = lookup(tree, focusSerial);
-
     const onKeyDown = KeyDownHandler(focus, mode, setMode, dispatch);
     const items = head.childs.map((child, i) => {
          return <Item trunk={child}
@@ -70,24 +77,20 @@ const Magnolia = () => {
     return (
         <div className="magnolia" onKeyDown={onKeyDown}>
             <div>
-                <div>
-                    <Breadcrumbs setHead={setHead} setFocus={setFocus}
-                                 ancestors={ancestorsOf(tree, head)}/>
-                    <div className="head">
-                        <Title trunk={head}
-                               setTitle={setTitle}
-                               setFocus={setFocus}
-                               setHead={setHead}
-                               collapseable={false}
-                               entryEnabled={mode !== 'vim-default'}
-                               focus={focus}/>
-                    </div>
+                <Breadcrumbs setHead={setHead} setFocus={setFocus}
+                             ancestors={ancestorsOf(tree, head)}/>
+                <div className="head">
+                    <Title trunk={head}
+                           setTitle={setTitle}
+                           setFocus={setFocus}
+                           setHead={setHead}
+                           collapseable={false}
+                           entryEnabled={mode !== 'vim-default'}
+                           focus={focus}/>
                 </div>
             </div>
             <div>
-                <div >
-                    {items}
-                </div>
+                {items}
             </div>
         </div>
     );
