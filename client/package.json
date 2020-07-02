@@ -1,5 +1,5 @@
 {
-  "name": "magnolial",
+  "name": "magnolia",
   "version": "0.0.1",
   "description": "Workflowy-inspired self-hosted nested list webapp",
   "scripts": {
@@ -13,7 +13,7 @@
     "url": "https://github.com/eflynch/magnolial.git"
   },
   "keywords": [
-    "magnolial",
+    "magnolia",
     "workflowy",
     "lists",
     "trees"
@@ -21,22 +21,27 @@
   "author": "Evan F. Lynch <evan.f.lynch@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/eflynch/magnolial/issues"
+    "url": "https://github.com/eflynch/magnolia/issues"
   },
-  "homepage": "https://github.com/eflynch/magnolial",
-  "dependencies": {},
+  "homepage": "https://github.com/eflynch/magnolia",
+  "dependencies": {
+    "react-bootstrap": "1.0.1",
+    "react-fontawesome": "1.7.1",
+    "react-use": "15.3.0",
+    "redux": "4.0.5"
+  },
   "devDependencies": {
     "@babel/core": "7.10.2",
+    "@babel/plugin-proposal-class-properties": "7.10.4",
     "@babel/preset-env": "7.10.2",
     "@babel/preset-react": "7.10.1",
     "babel-loader": "8.1.0",
     "immutability-helper": "3.1.1",
     "react": "16.13.1",
     "react-dom": "16.13.1",
-    "react-redux": "7.2.0",
-    "socket.io-client": "2.3.0",
     "webpack": "4.43.0",
     "webpack-cli": "3.3.12",
+    "webpack-dev-server": "3.11.0",
     "webpack-notifier": "1.8.0"
   }
 }

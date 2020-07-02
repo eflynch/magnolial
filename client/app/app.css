@@ -1,0 +1,122 @@
+body {
+    background-color: #FDF5DB !important;
+}
+
+.magnolia {
+    padding-top: 20px;
+    padding-bottom: 30px;
+    font-family: sans-serif;
+    background-color: #FDF5DB;
+    color: #1C8173;
+}
+
+.decoration {
+    width: 15px;
+    font-size: 16px !important;
+    margin-right: 5px;
+    margin-top: 2px;
+    vertical-align: top;
+    display: inline-block;
+    cursor: pointer;
+    -moz-user-select: none; 
+    -khtml-user-select: none; 
+    -webkit-user-select: none; 
+    -o-user-select: none; 
+}
+
+.magnolia .decoration.completed {
+    color: gray;
+}
+
+.magnolia ul {
+    margin: 0;
+    margin-left: 5px;
+    padding-left: 30px;
+    border-left-width: 1px;
+    border-left-style: solid;
+    border-left-color: #DCDCDC;
+}
+
+.magnolia li {
+    list-style: none;
+}
+
+.magnolia .title {
+    display: inline-block;
+    position: relative;
+    padding: 0;
+    margin: 0;
+    width: 90%;
+}
+
+.magnolia .title .top {
+    position:absolute;
+    top: 0;
+    left: 0;
+    min-width: 100px;
+    min-height: 22px;
+}
+
+.magnolia .title .bottom {
+    min-width: 100px;
+    min-height: 22px;
+}
+
+.magnolia .head .title .title-input {
+    font-size: 32px;
+    min-height: 33px;
+}
+
+
+.magnolia .title .title-input {
+    display: flex;
+    align-items: center;
+
+    border-radius: 3px;
+    color: #1C8173;
+    background-color:#FDF5DB;
+    outline: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font-weight: 500;
+    font-size: 16px;
+    font-family: sans-serif;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 2px;
+    padding-bottom: 1px;
+}
+
+.magnolia .title .title-input.bottom.focused {
+    background-color: #E6DFC2;
+}
+
+.magnolia .title .title-input.top.focused {
+    background-color: #E6DFC2;
+    color: #1A74CB;
+}
+
+.magnolia .title .title-input.completed {
+    text-decoration: line-through;
+    color: gray;
+}
+
+.magnolia .title .title-input.top.readonly {
+    display: none;
+}
+
+.magnolia .breadcrumb-wrapper {
+    font-weight: 100;
+    color: #946600;
+    cursor: pointer;
+}
+
+.magnolia .breadcrumb-sym {
+    font-weight: 100;
+    padding-left: 5px;
+    padding-right: 5px;
+    display: inline-block;
+    color: #DB9E31;
+
+}
