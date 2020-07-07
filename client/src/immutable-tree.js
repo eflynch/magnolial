@@ -15,7 +15,7 @@ export const createSerialGenerator = size => () => {
 export const parseTrunk = (trunk, createBaseValue, makeSerial=createSerialGenerator(5)) => {
     const lookup = {};
     const formatChild = (child, _parent) => {
-        if (child.value === undefined){
+        if (child.value === undefined || child.value === null){
             child.value = createBaseValue();
         }
         if (child.childs === undefined){

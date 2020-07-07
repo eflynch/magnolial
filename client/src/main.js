@@ -1,5 +1,6 @@
 import React, { useReducer, useEffect } from 'react';
 import { render } from 'react-dom';
+import axios from 'axios';
 
 import App from './components/app';
 import rootReducer from './reducers';
@@ -9,18 +10,19 @@ import {SYNC, SYNC_FAILED, SYNC_SUCCEEDED} from './actions';
 
 import PromiseQueue from './promise-queue';
 
-import {makeEmptyTree} from './immutable-tree';
+import {makeEmptyTree, parseTrunk} from './immutable-tree';
 
 const syncEffect = (tree, dispatch) => () => {
+    if (!window.bootstrap.magnolia_id){
+        return;
+    }
+
     const syncMagnolia = (tree) => {
-        return PromiseQueue.enqueue(() =>
-            new Promise((resolve, reject) =>{
-                setTimeout(()=>{
-                    // TODO: API CALL
-                    resolve();
-                }, 20);
-            })
-       );
+        return PromiseQueue.enqueue(() => {
+            return axios.patch(`/api/magnolia/${window.bootstrap.magnolia_id}`, {
+                    magnolia: tree
+                });
+        });
     };
 
     dispatch(SYNC());
@@ -33,7 +35,7 @@ const syncEffect = (tree, dispatch) => () => {
 
 const Main = ({initialState}) => {
     const [state, dispatch] = useReducer(rootReducer, initialState);
-    useEffect(syncEffect(state.magnolia.tree, dispatch), [state.magnolia.tree])
+    useEffect(syncEffect(state.magnolia.tree.trunk, dispatch), [state.magnolia.tree.trunk])
 
     return (
         <MagnoliaContext.Provider value={{state, dispatch}} >
@@ -44,16 +46,16 @@ const Main = ({initialState}) => {
 };
 
 const loadMagnolia = () => {
-    // TODO: API CALL
+    const makeBaseValue = () => ({title:"", link:"", content:""});
+    let tree;
+    if (window.bootstrap.magnolia) {
+        tree = parseTrunk(window.bootstrap.magnolia, makeBaseValue)
+    } else {
+        tree = makeEmptyTree(makeBaseValue);
+    }
     render(<Main initialState={{
         magnolia: {
-            tree: makeEmptyTree(()=>{
-                return {
-                    title: "",
-                    link:"",
-                    content: ""
-                };
-            }),
+            tree: tree,
             headSerial: null,
             focusSerial: null
         },
