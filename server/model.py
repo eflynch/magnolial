@@ -37,6 +37,9 @@ class MagnoliaModel:
             ret = self._cursor.fetchone()
             if not ret:
                 raise ModelException("Failed to find Magnolia after creation")
+        else:
+            if self.create:
+                raise ModelException("Found an existing magnolia")
 
         self._magnolia = [ret[0]]
         return self._magnolia
