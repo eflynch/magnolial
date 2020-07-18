@@ -7,9 +7,7 @@ import Magnolia from './magnolia';
 
 const App = () => {
     return (
-        <div>
-            <Magnolia />
-        </div>
+        <Magnolia />
     );
 };
 export default App;

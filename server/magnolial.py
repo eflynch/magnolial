@@ -4,7 +4,7 @@ import json
 from flask import Flask, request
 
 from reactstub import reactstub
-from model import MagnoliaModel
+from model import MagnoliaModel, ModelException
 
 from api import api
 
@@ -25,11 +25,14 @@ else:
 def index():
     magnolia_id = request.args.get("magnolia_id", None)
     if magnolia_id is not None:
-        with MagnoliaModel(magnolia_id, create=True) as magnolias:
-            return reactstub("Magnolial", ["app/app.css", "app/font-awesome-4.5.0/css/font-awesome.min.css"], ["app/main.js"], bootstrap=json.dumps({
-                "magnolia_id": magnolia_id,
-                "magnolia": magnolias[0]
-            }))
+        try:
+            with MagnoliaModel(magnolia_id, create=False) as magnolias:
+                return reactstub("Magnolial", ["app/app.css", "app/font-awesome-4.5.0/css/font-awesome.min.css"], ["app/main.js"], bootstrap=json.dumps({
+                    "magnolia_id": magnolia_id,
+                    "magnolia": magnolias[0]
+                }))
+        except ModelException:
+            return reactstub("Magnolial", ["app/app.css", "app/font-awesome-4.5.0/css/font-awesome.min.css"], ["app/main.js"], bootstrap=json.dumps({}))
     else:
         return reactstub("Magnolial", ["app/app.css", "app/font-awesome-4.5.0/css/font-awesome.min.css"], ["app/main.js"], bootstrap=json.dumps({}))
 

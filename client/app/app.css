@@ -1,12 +1,38 @@
 body {
-    background-color: #FDF5DB !important;
+    margin: 0;
+    background-color: #FDF5DB;
+}
+
+#content {
+    display: flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.header {
+    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 30px;
+    padding-right: 30px;
+    background-color: #00725f;
+    color: white;
+    font-size: 24px;
+    font-family: sans-serif;
+}
+
+.header img {
+    height: 30px;
+    filter: invert(100%) sepia(12%) saturate(10000%) hue-rotate(270deg) brightness(100%) contrast(80%);
 }
 
 .magnolia {
-    padding-top: 20px;
-    padding-bottom: 30px;
+    background-color: white;
+    padding: 20px;
+    min-width: 600px;
+    max-width: 100vw;
     font-family: sans-serif;
-    background-color: #FDF5DB;
     color: #1C8173;
 }
 
@@ -46,7 +72,6 @@ body {
     position: relative;
     padding: 0;
     margin: 0;
-    width: 90%;
 }
 
 .magnolia .title .top {
@@ -62,9 +87,15 @@ body {
     min-height: 22px;
 }
 
+.magnolia .head .title {
+    width: 100%;
+}
+
+
 .magnolia .head .title .title-input {
     font-size: 32px;
     min-height: 33px;
+    padding: 10px;
 }
 
 
@@ -74,7 +105,6 @@ body {
 
     border-radius: 3px;
     color: #1C8173;
-    background-color:#FDF5DB;
     outline: none;
     border: none;
     padding: 0;
@@ -86,6 +116,7 @@ body {
     padding-right: 4px;
     padding-top: 2px;
     padding-bottom: 1px;
+    max-width: 100vw;
 }
 
 .magnolia .title .title-input.bottom.focused {
@@ -118,5 +149,8 @@ body {
     padding-right: 5px;
     display: inline-block;
     color: #DB9E31;
+}
 
+.sync {
+    margin: 20px;
 }

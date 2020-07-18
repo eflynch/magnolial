@@ -23,31 +23,29 @@ const Item = React.memo(({trunk, focus, setFocus, setHead, setTitle, setCollapse
     return (
         <div className={className}>
             <li>
-                <div lg={12}>
-                    <div onFocus={()=>{setFocus(trunk);}}>
-                        <Decoration trunk={trunk}
-                                    collapseable={trunk.childs.length > 0} 
-                                    collapsed={trunk.collapsed}
-                                    toggleCollapsed={()=>setCollapsed(trunk, !trunk.collapsed)}
-                                    hasContent={hasContent}
-                                    hasLink={hasLink}
-                                    setHead={setHead}
-                                    setFocus={setFocus}/>
-                        <Title trunk={trunk}
-                               setTitle={setTitle}
-                               setFocus={setFocus}
-                               setHead={setHead}
-                               collapseable={trunk.childs.length > 0}
-                               toggleCollapsed={()=>setCollapsed(trunk, !trunk.collapsed)}
-                               entryEnabled={entryEnabled}
-                               hasContent={hasContent}
-                               hasLink={hasLink}
-                               focus={focus}/>
-                    </div>
-                    <ul>
-                        {children}
-                    </ul>
+                <div onFocus={()=>{setFocus(trunk);}}>
+                    <Decoration trunk={trunk}
+                                collapseable={trunk.childs.length > 0} 
+                                collapsed={trunk.collapsed}
+                                toggleCollapsed={()=>setCollapsed(trunk, !trunk.collapsed)}
+                                hasContent={hasContent}
+                                hasLink={hasLink}
+                                setHead={setHead}
+                                setFocus={setFocus}/>
+                    <Title trunk={trunk}
+                           setTitle={setTitle}
+                           setFocus={setFocus}
+                           setHead={setHead}
+                           collapseable={trunk.childs.length > 0}
+                           toggleCollapsed={()=>setCollapsed(trunk, !trunk.collapsed)}
+                           entryEnabled={entryEnabled}
+                           hasContent={hasContent}
+                           hasLink={hasLink}
+                           focus={focus}/>
                 </div>
+                <ul>
+                    {children}
+                </ul>
             </li>
         </div>
     );
