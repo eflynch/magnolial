@@ -5,6 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack-dev-server --content-base app/",
+    "devbuild": "webpack",
     "build": "webpack -p",
     "watch": "webpack --watch"
   },

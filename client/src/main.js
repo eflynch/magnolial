@@ -13,16 +13,40 @@ import PromiseQueue from './promise-queue';
 
 import {makeEmptyTree, parseTrunk} from './immutable-tree';
 
-const syncEffect = (tree, dispatch) => () => {
-    if (!window.bootstrap.magnolia_id){
-        return;
-    }
+function fetch(url, options) {
+  // Somewhat pleasant wrapper around XHR.
 
+  options = options || {};
+  return new Promise(function(resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+      if (xhr.status >= 400) {
+        reject(new Error("XHR returned status " + xhr.status + ":\n" + xhr.responseText));
+      } else {
+        resolve(xhr);
+      }
+    };
+    xhr.onerror = function(e) { reject(e); };
+    if (options.hasOwnProperty('responseType'))
+      xhr.responseType = options.responseType;
+    var method = 'get';
+    if (options.hasOwnProperty('method'))
+      method = options.method;
+    xhr.open(method, url)
+    var data = undefined;
+    if (options.hasOwnProperty('data'))
+      data = options.data;
+    xhr.send(data);
+  });
+}
+
+const syncEffect = (tree, dispatch) => () => {
     const syncMagnolia = (tree) => {
         return PromiseQueue.enqueue(() => {
-            return axios.patch(`/api/magnolia/${window.bootstrap.magnolia_id}`, {
-                    magnolia: tree
-                });
+            return fetch(`/var/content`, {
+                method: "put",
+                data: JSON.stringify({magnolia: tree})
+            });
         });
     };
 
@@ -50,40 +74,21 @@ const Main = ({initialState}) => {
 };
 
 const loadMagnolia = () => {
-    const makeBaseValue = () => ({title:"", link:"", content:""});
-    let tree;
-    if (window.bootstrap.magnolia) {
-        tree = parseTrunk(window.bootstrap.magnolia, makeBaseValue)
-    } else {
-        tree = makeEmptyTree(makeBaseValue);
-    }
-    render(<Main initialState={{
-        magnolia: {
-            tree: tree,
-            headSerial: null,
-            focusSerial: null
-        },
-        synchronize: 'ok'
-    }}/>, document.getElementById('content'));
+    fetch(`/var/content`, {method:"get"}).then((data) => {
+        const trunk = JSON.parse(data.responseText).magnolia;
+        const createBaseValue = () => ({title:"", link:"", content:""});
+        let tree = parseTrunk(trunk, createBaseValue);
+        render(<Main initialState={{
+            magnolia: {
+                tree: tree,
+                headSerial: null,
+                focusSerial: null
+            },
+            synchronize: 'ok'
+        }}/>, document.getElementById('content'));
+    });
 }
-
-
-
-const Header = () => {
-    return (
-        <div className="header">
-            Magnolia
-            <img src="static/app/icon.png"/>
-        </div>
-    );
-};
-
-const loadHeader = () => {
-    render(<Header/>, document.getElementById('header'));
-}
-
 
 document.addEventListener("DOMContentLoaded", () => {
     loadMagnolia();
-    loadHeader();
 });
