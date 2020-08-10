@@ -5,13 +5,19 @@ const InnerContentEditable = React.memo(React.forwardRef(({value, onChange, onBl
     const emit = (e) => {
         const newValue = ref.current.innerHTML;
         if (value !== newValue && onChange){
-            onChange({target:{value:newValue}});
+            if (newValue == "<br>") {
+                onChange({target:{value:""}});
+                ref.current.innerHTML = "";
+            } else { 
+                onChange({target:{value:newValue}});
+            }
         }
     };
     return (
         <div {...rest}
             ref={ref}
             spellCheck={false}
+            placeholder="_"
             contentEditable={!readOnly}
             dangerouslySetInnerHTML={{__html: value}}
             onInput={emit}

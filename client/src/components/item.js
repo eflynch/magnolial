@@ -23,7 +23,7 @@ const Item = React.memo(({trunk, focus, setFocus, setHead, setTitle, setCollapse
     return (
         <div className={className}>
             <li>
-                <div onFocus={()=>{setFocus(trunk);}}>
+                <div className="item" onFocus={()=>{setFocus(trunk);}}>
                     <Decoration trunk={trunk}
                                 collapseable={trunk.childs.length > 0} 
                                 collapsed={trunk.collapsed}

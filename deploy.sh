@@ -2,5 +2,7 @@
 cd client
 npm run devbuild
 cd ..
-rsync -rl client/app/* sandstorm/client/
-rsync -rl sandstorm/ ~/stuff/sandstorm/magnolial/
+rsync -rl client/app/* package/client/
+rsync -rl package sandstorm-all/magnolial
+cd sandstorm-all
+vagrant ssh -c 'cd /vagrant/magnolial/package; sudo make dev'

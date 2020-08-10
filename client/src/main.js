@@ -74,10 +74,20 @@ const Main = ({initialState}) => {
 };
 
 const loadMagnolia = () => {
+    const createBaseValue = () => ({title:"", link:"", content:""});
     fetch(`/var/content`, {method:"get"}).then((data) => {
         const trunk = JSON.parse(data.responseText).magnolia;
-        const createBaseValue = () => ({title:"", link:"", content:""});
         let tree = parseTrunk(trunk, createBaseValue);
+        render(<Main initialState={{
+            magnolia: {
+                tree: tree,
+                headSerial: null,
+                focusSerial: null
+            },
+            synchronize: 'ok'
+        }}/>, document.getElementById('content'));
+    }).catch(()=>{
+        const tree = makeEmptyTree(createBaseValue);
         render(<Main initialState={{
             magnolia: {
                 tree: tree,

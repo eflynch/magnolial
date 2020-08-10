@@ -206,10 +206,18 @@ const keyDownVimInput = (e, child, setMode, dispatch) => {
             return;
         }
         e.preventDefault();
-        if (child.value.title === ''){
-            dispatch(Actions.NEW(child));
+        if (child.value.title === '') {
+            if (child.childs.length === 0){
+                dispatch(Actions.NEW(child));
+            } else {
+                dispatch(Actions.FOCUS_DOWN(child));
+            }
         } else {
-            dispatch(Actions.NEW_BELOW(child));
+            if (child.childs.length === 0){
+                dispatch(Actions.NEW_BELOW(child));
+            } else {
+                dispatch(Actions.FOCUS_DOWN(child));
+            }
         }
     }
 };
