@@ -1,3 +1,4 @@
+build/package.spk
 .sandstorm-keyring
 client/app/main.js
 ###Python###

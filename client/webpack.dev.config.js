@@ -2,7 +2,7 @@ var webpack = require('webpack');
 var path = require('path');
 var WebpackNotifierPlugin = require('webpack-notifier');
 
-var BUILD_DIR = path.resolve(__dirname, 'app')
+var BUILD_DIR = path.resolve(__dirname, '..', 'sandstorm-all', 'magnolial', 'package', 'client')
 var APP_DIR = path.resolve(__dirname, 'src')
 
 var config = {
