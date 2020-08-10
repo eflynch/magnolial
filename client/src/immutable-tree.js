@@ -101,7 +101,7 @@ export const undo = (tree) => {
         return updateLookup(update(tree, {
             trunk: backwardHash.trunkHash,
             undo: {$splice: [[tree.undo.length - 1, 1]] },
-            redo: {$push: {forwardHash, backwardHash}},
+            redo: {$push: [{forwardHash, backwardHash}]},
         }), backwardHash.deletedSerials);
     } else {
         return tree;
@@ -113,7 +113,7 @@ export const redo = (tree) => {
         const {forwardHash, backwardHash} = tree.redo[tree.redo.length - 1];
         return updateLookup(update(tree, {
             trunk: forwardHash.trunkHash,
-            undo: {$push: {forwardHash, backwardHash}},
+            undo: {$push: [{forwardHash, backwardHash}]},
             redo: {$splice: [[tree.redo.length - 1, 1]] },
         }), forwardHash.deletedSerials);
     } else {

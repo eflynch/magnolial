@@ -1,3 +1,6 @@
 [submodule "sandstorm"]
 	path = package
 	url = git@github.com:eflynch/magnolial-sandstorm.git
+[submodule "sandstorm-all"]
+	path = sandstorm-all
+	url = git@github.com:eflynch/sandstorm.git
