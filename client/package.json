@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/eflynch/magnolia",
   "dependencies": {
-    "axios": "0.19.2",
+    "axios": "0.21.1",
     "react-bootstrap": "1.0.1",
     "react-fontawesome": "1.7.1",
     "react-use": "15.3.0",
